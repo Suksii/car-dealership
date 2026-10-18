@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Manrope } from "next/font/google";
 import Header from "@/features/shared/components/layout/Header";
 import Footer from "@/features/shared/components/layout/Footer";
 import Providers from "./providers";
 import { SITE } from "@/config/site";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "latin-ext"] });
+const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin", "latin-ext"], weight: ["400", "500", "600", "700", "800"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="sr-Latn-ME" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="sr-Latn-ME" className={`${manrope.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Providers>
           <Header />

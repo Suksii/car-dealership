@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { dealers } from "@/db/schema";
 import { imageUrl } from "@/lib/images";
@@ -15,6 +15,8 @@ export interface DealerCardItem {
   logo: string | null;
   activeListings: number;
   isFeatured: boolean;
+  /** Do 3 slike najnovijih oglasa (za karticu placa). */
+  previews: string[];
 }
 
 export async function getDealers(): Promise<DealerCardItem[]> {
@@ -26,10 +28,29 @@ export async function getDealers(): Promise<DealerCardItem[]> {
     orderBy: [desc(dealers.isFeatured), desc(dealers.activeListingsCount), asc(dealers.name)],
     with: { city: true },
   });
+  const previews = rows.length
+    ? await db.execute<{ dealer_id: string; key: string }>(sql`
+    SELECT dealer_id, storage_key AS key FROM (
+      SELECT l.dealer_id, li.storage_key, row_number() OVER (PARTITION BY l.dealer_id ORDER BY l.published_at DESC, l.id) AS rn
+      FROM listings l JOIN listing_images li ON li.listing_id = l.id AND li.sort_order = 0
+      WHERE l.status = 'active' AND l.dealer_id IN ${sql`(${sql.join(
+        rows.map((r) => sql`${r.id}`),
+        sql`, `,
+      )})`}
+    ) t WHERE rn <= 3 ORDER BY dealer_id, rn`)
+    : [];
+  const byDealer = new Map<string, string[]>();
+  for (const p of previews) byDealer.set(p.dealer_id, [...(byDealer.get(p.dealer_id) ?? []), imageUrl(p.key, "thumb")]);
   return rows.map((d) => ({
-    id: d.id, slug: d.slug, name: d.name, city: d.city.name, citySlug: d.city.slug,
+    id: d.id,
+    slug: d.slug,
+    name: d.name,
+    city: d.city.name,
+    citySlug: d.city.slug,
     logo: d.logoKey ? imageUrl(d.logoKey, "card") : null,
-    activeListings: d.activeListingsCount, isFeatured: d.isFeatured,
+    activeListings: d.activeListingsCount,
+    isFeatured: d.isFeatured,
+    previews: byDealer.get(d.id) ?? [],
   }));
 }
 

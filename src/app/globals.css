@@ -5,7 +5,7 @@
    nastaju iz ove @theme mape. Nikad ne mapiraj varijablu samu na sebe.
    ------------------------------------------------------------------ */
 @theme {
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
 
   --color-foreground: #111318;
   --color-background: #f5f5f6;
@@ -21,8 +21,8 @@
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
 
-  --text-hero: 2.75rem;
-  --leading-hero: 1.05;
+  --text-hero: 2.5rem;
+  --leading-hero: 1.04;
   --shadow-custom: 0 18px 50px rgb(17 19 24 / 0.08);
   --shadow-card: 0 1px 2px rgb(17 19 24 / 0.04), 0 8px 24px rgb(17 19 24 / 0.06);
 }
@@ -44,11 +44,17 @@
 @utility container-box { @apply rounded-2xl bg-surface p-5 shadow-card md:p-8; }
 @utility grid-listings { @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4; }
 @utility eyebrow { @apply text-xs font-bold tracking-widest uppercase; }
-@utility hero-glow {
-  background-color: var(--color-foreground);
+/* Tamni preliv preko hero fotografije: lijevo i dolje tamnije da tekst bude čitljiv. */
+@utility hero-shade {
   background-image:
-    radial-gradient(60% 80% at 85% 10%, rgb(36 87 245 / 0.45), transparent 60%),
-    radial-gradient(40% 60% at 10% 90%, rgb(36 87 245 / 0.18), transparent 60%);
+    linear-gradient(90deg, rgb(10 12 18 / 0.86) 0%, rgb(10 12 18 / 0.62) 42%, rgb(10 12 18 / 0.12) 100%),
+    linear-gradient(0deg, rgb(10 12 18 / 0.7) 0%, rgb(10 12 18 / 0) 45%);
+}
+/* Horizontalni red kartica koji na telefonu skroluje, na desktopu je grid. */
+@utility row-scroll {
+  @apply -mx-4 flex snap-x gap-3 overflow-x-auto px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:gap-4 lg:overflow-visible lg:px-0;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }
 @utility img-fade { @apply bg-gradient-to-t from-black/60 via-black/0 to-black/0; }
 

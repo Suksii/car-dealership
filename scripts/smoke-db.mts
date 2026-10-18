@@ -15,5 +15,5 @@ try {
     console.log({ afterInsert: c1.active_listings_count, afterSold: c2.active_listings_count, updatedAtTrigger: c2.updated_moved, citextMatch: dup.n });
     throw new Error("ROLLBACK");
   });
-} catch (e: any) { if (e.message !== "ROLLBACK") throw e; }
+} catch (e) { if (!(e instanceof Error) || e.message !== "ROLLBACK") throw e; }
 await sql.end();

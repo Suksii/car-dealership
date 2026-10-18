@@ -26,6 +26,10 @@ sajta nigdje ne pisati kao literal — samo kroz `src/config/site.ts`.
   `auth()` obavezno `await connection()`. Tvrda pravila u `docs/RENDERING.md`.
 - **Jezik**: UI tekst je crnogorski (ijekavica), kod i imena na engleskom.
   Cijene su cijeli euri (`formatPrice`), datumi `sr-Latn-ME`.
+- **Demo podaci**: `npx tsx scripts/seed-demo.mts [--reset]` — 3 placa i 30
+  oglasa sa pravim fotografijama sa Pexelsa (ID-jevi u `db/demo/photos.json`,
+  keš `storage/demo-cache`, preuzimanje `scripts/fetch-demo-photos.mts`).
+  Nikad gradijent/placeholder slike u demo podacima; novi model → dodaj ID-jeve.
 - **Dev korisnici** (Neon): `test@autoplac.me` (plac „Test Autoplac") i
   `admin@autoplac.me`, lozinka u `scripts/create-test-user.mts`. Korisnik često
   drži `npm run dev` na portu 3000; kolačići za `localhost` se dijele između

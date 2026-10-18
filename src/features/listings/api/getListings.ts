@@ -4,15 +4,16 @@ import { db } from "@/db";
 import { listings, dealers, makes, models, cities } from "@/db/schema";
 import { toCardItem, type ListingCardItem } from "@/features/listings/lib/card";
 import type { FuelKey, TransmissionKey, BodyKey } from "@/features/listings/lib/labels";
+import { imageUrl } from "@/lib/images";
 
 export const LISTINGS_TAG = "listings";
 export const PAGE_SIZE = 24;
 
 export interface ListingFilters {
-  make?: string;      // slug
-  model?: string;     // slug
-  city?: string;      // slug
-  dealer?: string;    // slug
+  make?: string; // slug
+  model?: string; // slug
+  city?: string; // slug
+  dealer?: string; // slug
   priceMin?: number;
   priceMax?: number;
   yearMin?: number;
@@ -53,7 +54,9 @@ const ORDER = {
 };
 
 /** Javna lista oglasa sa filterima i paginacijom. Keširano, invalidira se tagom. */
-export async function getListings(f: ListingFilters): Promise<{ items: ListingCardItem[]; total: number; page: number; lastPage: number }> {
+export async function getListings(
+  f: ListingFilters,
+): Promise<{ items: ListingCardItem[]; total: number; page: number; lastPage: number }> {
   "use cache";
   cacheLife("minutes");
   cacheTag(LISTINGS_TAG);
@@ -86,12 +89,21 @@ export async function getListings(f: ListingFilters): Promise<{ items: ListingCa
   const rows = ids.length
     ? await db.query.listings.findMany({
         where: sql`${listings.id} IN ${ids}`,
-        with: { make: true, model: true, city: true, dealer: { columns: { name: true, slug: true } }, images: { limit: 1, orderBy: (i, { asc }) => asc(i.sortOrder) } },
+        with: {
+          make: true,
+          model: true,
+          city: true,
+          dealer: { columns: { name: true, slug: true } },
+          images: { limit: 1, orderBy: (i, { asc }) => asc(i.sortOrder) },
+        },
       })
     : [];
   const byId = new Map(rows.map((r) => [r.id, r]));
   const now = Date.now();
-  const items = ids.map((id) => byId.get(id)!).filter(Boolean).map((r) => toCardItem(r, now));
+  const items = ids
+    .map((id) => byId.get(id)!)
+    .filter(Boolean)
+    .map((r) => toCardItem(r, now));
   return { items, total, page, lastPage: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
 }
 
@@ -107,8 +119,37 @@ export async function getSiteStats(): Promise<{ listings: number; dealers: numbe
   "use cache";
   cacheLife("hours");
   cacheTag(LISTINGS_TAG);
-  const [l] = await db.select({ n: count() }).from(listings).innerJoin(dealers, eq(dealers.id, listings.dealerId)).where(publicListing());
+  const [l] = await db
+    .select({ n: count() })
+    .from(listings)
+    .innerJoin(dealers, eq(dealers.id, listings.dealerId))
+    .where(publicListing());
   const [d] = await db.select({ n: count() }).from(dealers).where(eq(dealers.status, "active"));
-  const [c] = await db.select({ n: sql<number>`count(distinct ${dealers.cityId})::int` }).from(dealers).where(eq(dealers.status, "active"));
+  const [c] = await db
+    .select({ n: sql<number>`count(distinct ${dealers.cityId})::int` })
+    .from(dealers)
+    .where(eq(dealers.status, "active"));
   return { listings: l.n, dealers: d.n, cities: c.n };
+}
+
+export interface BodyTypeStat {
+  body: BodyKey;
+  count: number;
+  image: string | null;
+}
+
+/** Broj aktivnih oglasa po karoseriji + slika najnovijeg oglasa te karoserije (za naslovnu). */
+export async function getBodyTypeStats(): Promise<BodyTypeStat[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(LISTINGS_TAG);
+  const rows = await db.execute<{ body: BodyKey; count: number; key: string | null }>(sql`
+    SELECT l.body_type AS body, count(*)::int AS count,
+      (SELECT li.storage_key FROM listings l2 JOIN listing_images li ON li.listing_id = l2.id
+         WHERE l2.body_type = l.body_type AND l2.status = 'active'
+         ORDER BY li.sort_order, l2.published_at DESC LIMIT 1) AS key
+    FROM listings l JOIN dealers d ON d.id = l.dealer_id
+    WHERE l.status = 'active' AND d.status = 'active'
+    GROUP BY l.body_type ORDER BY count DESC`);
+  return rows.map((r) => ({ body: r.body, count: r.count, image: r.key ? imageUrl(r.key, "card") : null }));
 }

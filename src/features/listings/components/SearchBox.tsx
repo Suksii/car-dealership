@@ -35,7 +35,7 @@ export default function SearchBox({ makes, models, cities }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 rounded-2xl bg-surface p-3 shadow-custom md:grid-cols-[1fr_1fr_1fr_1fr_auto] md:p-4">
+    <form onSubmit={submit} className="grid gap-2.5 rounded-2xl bg-surface p-3 shadow-custom md:grid-cols-[1.1fr_1.1fr_1fr_1fr_auto] md:gap-3 md:p-3.5">
       <Select options={makeOpts} value={make} onChange={(v) => { setMake(v); setModel(""); }} placeholder="Marka" searchable clearable />
       <Select options={modelOpts} value={model} onChange={setModel} placeholder="Model" searchable clearable disabled={!make} />
       <Select options={priceOpts} value={price} onChange={setPrice} placeholder="Cijena do" clearable />

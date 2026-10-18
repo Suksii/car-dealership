@@ -6,7 +6,11 @@ import type { FuelKey, TransmissionKey, BodyKey } from "./labels";
 export interface ListingCardItem {
   id: string;
   href: string;
+  /** "Marka Model varijanta" – za alt i naslov stranice. */
   title: string;
+  /** "Marka Model" */
+  name: string;
+  variant: string | null;
   year: number;
   mileageKm: number;
   fuel: FuelKey;
@@ -41,6 +45,8 @@ export function toCardItem(row: Row, now: number): ListingCardItem {
     id: row.id,
     href: listingPath(row.slug, row.publicId),
     title,
+    name: `${row.make.name} ${row.model.name}`,
+    variant: row.variant,
     year: row.year,
     mileageKm: row.mileageKm,
     fuel: row.fuel,
