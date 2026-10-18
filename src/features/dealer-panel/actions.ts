@@ -3,7 +3,9 @@
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { LISTINGS_TAG } from "@/features/listings/api/getListings";
+import { DEALERS_TAG } from "@/features/dealers/api/getDealers";
 import { db } from "@/db";
 import { dealers, users, listings, listingImages, listingFeatures, makes, models } from "@/db/schema";
 import { requireSession, getMyDealer } from "@/lib/dal";
@@ -70,7 +72,7 @@ export async function updateDealer(_prev: FormState, fd: FormData): Promise<Form
 
   await db.update(dealers).set(dealerValues(parsed.data)).where(eq(dealers.id, dealer.id));
   revalidatePath("/plac");
-  revalidatePath(`/placevi/${dealer.slug}`);
+  updateTag(DEALERS_TAG);
   return { message: "Sačuvano" };
 }
 
@@ -132,7 +134,8 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
   });
 
   revalidatePath("/plac");
-  revalidatePath("/automobili");
+  updateTag(LISTINGS_TAG);
+  updateTag(DEALERS_TAG);
   redirect(`/plac?saved=${id}`);
 }
 
@@ -146,5 +149,6 @@ export async function setListingStatus(listingId: string, status: "active" | "so
     : { status };
   await db.update(listings).set(patch).where(and(eq(listings.id, listingId), eq(listings.dealerId, dealer.id)));
   revalidatePath("/plac");
-  revalidatePath("/automobili");
+  updateTag(LISTINGS_TAG);
+  updateTag(DEALERS_TAG);
 }

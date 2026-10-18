@@ -1,0 +1,60 @@
+import { imageUrl } from "@/lib/images";
+import { listingPath, listingTitle } from "./listing";
+import type { FuelKey, TransmissionKey, BodyKey } from "./labels";
+
+/** Minimalni serializable oblik oglasa za karticu (ide i u klijentske komponente). */
+export interface ListingCardItem {
+  id: string;
+  href: string;
+  title: string;
+  year: number;
+  mileageKm: number;
+  fuel: FuelKey;
+  transmission: TransmissionKey;
+  bodyType: BodyKey;
+  powerKw: number | null;
+  priceEur: number;
+  priceOnRequest: boolean;
+  priceNegotiable: boolean;
+  image: string | null;
+  imageAlt: string;
+  city: string;
+  dealer: { name: string; slug: string } | null;
+  isNew: boolean;
+  customsCleared: boolean;
+}
+
+type Row = {
+  id: string; slug: string; publicId: string; year: number; mileageKm: number; fuel: FuelKey; transmission: TransmissionKey;
+  bodyType: BodyKey; powerKw: number | null; priceEur: number; priceOnRequest: boolean; priceNegotiable: boolean; variant: string | null;
+  customsCleared: boolean; publishedAt: Date | null;
+  make: { name: string }; model: { name: string }; city: { name: string };
+  dealer: { name: string; slug: string } | null;
+  images: { storageKey: string }[];
+};
+
+const NEW_DAYS = 3;
+
+export function toCardItem(row: Row, now: number): ListingCardItem {
+  const title = listingTitle(row.make.name, row.model.name, row.variant);
+  return {
+    id: row.id,
+    href: listingPath(row.slug, row.publicId),
+    title,
+    year: row.year,
+    mileageKm: row.mileageKm,
+    fuel: row.fuel,
+    transmission: row.transmission,
+    bodyType: row.bodyType,
+    powerKw: row.powerKw,
+    priceEur: row.priceEur,
+    priceOnRequest: row.priceOnRequest,
+    priceNegotiable: row.priceNegotiable,
+    image: row.images[0] ? imageUrl(row.images[0].storageKey, "card") : null,
+    imageAlt: `${title} ${row.year}`,
+    city: row.city.name,
+    dealer: row.dealer ? { name: row.dealer.name, slug: row.dealer.slug } : null,
+    isNew: !!row.publishedAt && now - row.publishedAt.getTime() < NEW_DAYS * 86400_000,
+    customsCleared: row.customsCleared,
+  };
+}
