@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { auth, signOut } from "@/auth";
 
 async function UserMenu() {
+  await connection(); // Auth.js koristi crypto prije čitanja kolačića, pa prerender mora da zna da je ovo dinamično
   const session = await auth();
   if (!session) {
     return (

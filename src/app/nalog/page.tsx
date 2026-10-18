@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: "Moj nalog" };
 const roleLabel = { admin: "Administrator", dealer: "Autoplac", private: "Privatni korisnik" } as const;
 
 async function AccountInfo() {
+  await connection(); // Auth.js koristi crypto prije čitanja kolačića, pa prerender mora da zna da je ovo dinamično
   const session = await auth();
   if (!session) redirect("/prijava?next=/nalog");
   const { user } = session;
