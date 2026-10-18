@@ -34,7 +34,7 @@ export default function DealerCta() {
           ))}
         </ul>
         <div className="mt-7 flex flex-wrap items-center gap-4">
-          <Button href="/plac/registracija" size="lg">
+          <Button href="/plac/registracija" variant="secondary" size="lg">
             Registruj autoplac
           </Button>
           <span className="text-muted text-sm">Besplatno dok traje probni period.</span>

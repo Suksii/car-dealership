@@ -82,7 +82,7 @@ export function SubmitButton({
       disabled={pending}
       {...props}
       className={cn(
-        "bg-accent hover:bg-accent-hover inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        "bg-foreground inline-flex h-11 items-center justify-center rounded-xl px-6 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >

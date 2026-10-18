@@ -37,7 +37,7 @@ koji na telefonu skroluje horizontalno, na desktopu je flex red), `img-fade`,
 
 ## Komponente (`src/features/shared/components/ui/`)
 
-Button (pill, 5 varijanti), Badge, Checkbox (nativni input, radi u server
+Button (rounded-xl; primary = tamno, secondary = accent, outline, ghost, danger, viber, whatsapp), Badge, Checkbox (nativni input, radi u server
 formama), Toggle, Select (custom, tastatura, searchable, hidden input za
 FormData), SelectField, Field/TextareaField/SubmitButton, Modal (portal,
 framer-motion), Pagination, Breadcrumbs, SectionHeader, Skeleton, Logo.

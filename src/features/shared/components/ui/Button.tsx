@@ -2,15 +2,17 @@ import { type ButtonHTMLAttributes, type ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "viber" | "whatsapp";
 type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-accent text-white shadow-xs hover:bg-accent-hover",
-  secondary: "bg-foreground text-white shadow-xs hover:bg-neutral-800",
+  primary: "bg-foreground text-white shadow-xs hover:bg-neutral-800",
+  secondary: "bg-accent text-white shadow-xs hover:bg-accent-hover",
   outline: "border border-border bg-surface text-foreground shadow-xs hover:border-neutral-400 hover:bg-neutral-50",
   ghost: "text-foreground hover:bg-neutral-100",
   danger: "bg-danger text-white shadow-xs hover:opacity-90",
+  viber: "bg-viber text-white shadow-xs hover:bg-viber-hover",
+  whatsapp: "bg-whatsapp text-white shadow-xs hover:bg-whatsapp-hover",
 };
 
 const SIZES: Record<ButtonSize, string> = {
@@ -29,7 +31,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
 }
 
-/** Zaobljenje prati polja forme (rounded-xl) da dugme uz polje izgleda kao dio iste forme. */
+/**
+ * primary = tamno (glavna akcija svuda), secondary = accent (jedan naglašeni CTA po ekranu),
+ * viber/whatsapp = boje brendova. Zaobljenje prati polja forme (rounded-xl).
+ */
 export default function Button({
   variant = "primary",
   size = "md",

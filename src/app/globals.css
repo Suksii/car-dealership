@@ -13,9 +13,14 @@
   --color-muted: #6b7280;
   --color-border: rgb(17 19 24 / 0.1);
 
-  --color-accent: #2457f5;
-  --color-accent-hover: #1a44c9;
-  --color-accent-light: #eef2ff;
+  --color-accent: #e8590c;
+  --color-accent-hover: #c94d0a;
+  --color-accent-light: #fff1e8;
+
+  --color-viber: #7360f2;
+  --color-viber-hover: #5f4cd9;
+  --color-whatsapp: #1faa53;
+  --color-whatsapp-hover: #188f45;
 
   --color-success: #16a34a;
   --color-warning: #f59e0b;
