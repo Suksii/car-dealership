@@ -43,3 +43,6 @@ next-env.d.ts
 # lokalni upload slika u razvoju
 storage/*
 !storage/.gitkeep
+
+# log test servera
+next-start.log
