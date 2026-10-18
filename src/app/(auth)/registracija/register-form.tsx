@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { register, type FormState } from "../actions";
-import { Field, SubmitButton } from "@/components/form";
+import { Field, SubmitButton } from "@/components/ui/field";
 
 export function RegisterForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(register, undefined);

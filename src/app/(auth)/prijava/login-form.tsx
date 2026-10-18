@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { login, loginWithGoogle, type FormState } from "../actions";
-import { Field, SubmitButton } from "@/components/form";
+import { Field, SubmitButton } from "@/components/ui/field";
 
 export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(login, undefined);

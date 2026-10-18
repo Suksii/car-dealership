@@ -16,6 +16,7 @@ async function UserMenu() {
   }
   return (
     <div className="flex items-center gap-3 text-sm">
+      <Link href="/plac" className="rounded-md bg-accent px-3 py-1.5 font-medium text-white hover:bg-accent-hover">Moj autoplac</Link>
       <Link href="/nalog" className="hover:underline">{session.user.name}</Link>
       <form action={async () => { "use server"; await signOut({ redirectTo: "/" }); }}>
         <button type="submit" className="text-zinc-600 hover:underline">Odjava</button>
