@@ -1,25 +1,36 @@
 # Autoplac (radni naziv)
 
-Oglasnik polovnih automobila za Crnu Goru, okrenut autoplacevima. Next.js 16 + Postgres (Drizzle) + Cloudflare R2.
+Oglasnik polovnih automobila za Crnu Goru, okrenut autoplacevima. Next.js 16 (App Router, Cache Components) + Postgres (Drizzle) + Auth.js + Tailwind 4 + Cloudflare R2.
 
 ## Pokretanje
 
 ```bash
-cp .env.example .env     # upiši DATABASE_URL
+cp .env.example .env     # DATABASE_URL, AUTH_SECRET, (AUTH_GOOGLE_*, R2_*)
 npm install
-npm run db:migrate       # primijeni migracije iz drizzle/
+npm run db:migrate       # migracije iz drizzle/
 npm run db:seed          # gradovi, marke, modeli, oprema
 npm run dev
 ```
 
+Provjere prije commita: `npm run check` (tsc + lint + vitest), `npm run build` poslije nove rute.
+
+## Struktura
+
+```
+src/app/            tanke rute (metadata + Suspense + feature stranica)
+src/features/       auth, dealer-panel, listings, home, shared (ui + layout)
+src/lib/            dal, catalog, storage, images, utils, hooks, motion
+src/db/             Drizzle šema i klijent
+src/config/site.ts  brend i kontakt
+docs/               ARCHITECTURE.md, RENDERING.md, DESIGN.md
+.claude/agents/     projektni agenti (review, rendering, seo, security, design...)
+```
+
+Pravila za rad su u `CLAUDE.md` i `AGENTS.md`.
+
 ## Baza
 
-- Izvor istine: `src/db/schema.ts`. Migracije se generišu sa `npm run db:generate`.
-- Trigeri i materijalizovani pogled `price_stats` su u `drizzle/0001_triggers_and_views.sql`.
-- Seed podaci su u `db/seed_*.sql`; `db/schema.reference.sql` je samo čitljiva referenca.
-- Brza provjera baze: `npx tsx scripts/smoke-db.mts` (sve se radi u transakciji i vraća).
-- Dev baza: Neon projekat `autoplac` (eu-central-1). Produkcija ide na Hetzner.
-
-## Plan V1
-
-Vidi razgovor / bilješke: oglasi, pretraga, stranice autoplaceva, favoriti, admin, SEO, procjena cijene. Bez poruka, SMS-a i plaćanja.
+- Izvor istine: `src/db/schema.ts`; migracije `npm run db:generate`.
+- Trigeri i `price_stats` pogled: `drizzle/0001_triggers_and_views.sql`.
+- Seed: `db/seed_*.sql`. Dev baza je Neon, produkcija Hetzner.
+- Brza provjera baze: `npx tsx scripts/smoke-db.mts`.
