@@ -21,6 +21,7 @@ u `CLAUDE.md`, arhitektura u `docs/ARCHITECTURE.md`, rendering u
   + `<Suspense>` za dinamično. `"use cache"` + `cacheLife` za javne podatke
   (šifarnici, javni oglasi), nikad za per-user podatke.
 - Bez `export const dynamic/revalidate` segment config-a. Bez `unstable_cache`.
+  Jedini dozvoljeni segment config je `ensureStatic` (vidi `docs/RENDERING.md`, pravilo 6).
 - Server akcije: `"use server"` fajl izvozi samo async funkcije; svaka validira
   ulaz Zod-om i provjerava sesiju kroz `src/lib/dal.ts`.
 - Route handleri samo za ono što nije forma (upload, auth callback, servis slika).

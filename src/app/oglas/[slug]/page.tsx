@@ -7,6 +7,10 @@ import { getRecentListingSlugs } from "@/features/listings/api/getListingSlugs";
 import { formatPrice } from "@/lib/utils/format";
 import Skeleton from "@/features/shared/components/ui/Skeleton";
 
+// Cijela ruta je statična po slugu (use cache podaci, bez cookies/searchParams). Nepoznat slug se
+// renderuje do kraja prije slanja, pa notFound() daje pravi 404 umjesto fallback ljuske sa 200.
+export const ensureStatic = "navigation";
+
 export async function generateStaticParams() {
   return (await getRecentListingSlugs()).map((slug) => ({ slug }));
 }

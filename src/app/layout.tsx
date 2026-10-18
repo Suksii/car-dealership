@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Header from "@/features/shared/components/layout/Header";
 import Footer from "@/features/shared/components/layout/Footer";
+import Providers from "./providers";
 import { SITE } from "@/config/site";
 import "./globals.css";
 
@@ -17,9 +18,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="sr-Latn-ME" className={`${geistSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <Header />
-        <main className="flex flex-1 flex-col">{children}</main>
-        <Footer />
+        <Providers>
+          <Header />
+          <main className="flex flex-1 flex-col">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
