@@ -10,7 +10,14 @@ import { db } from "@/db";
 import { dealers, users, listings, listingImages, listingFeatures, makes, models } from "@/db/schema";
 import { requireSession, getMyDealer } from "@/lib/dal";
 import { slugify } from "@/lib/utils/slugify";
-import { fieldErrors, listingFormToObject, listingSchema, listingSlug, newPublicId, LISTING_DAYS } from "@/features/listings/lib/listing";
+import {
+  fieldErrors,
+  listingFormToObject,
+  listingSchema,
+  listingSlug,
+  newPublicId,
+  LISTING_DAYS,
+} from "@/features/listings/lib/listing";
 
 export type FormState = { errors?: Record<string, string>; message?: string } | undefined;
 
@@ -22,6 +29,8 @@ const dealerSchema = z.object({
   phone: z.string().trim().min(6, "Unesi telefon").max(30),
   phone2: z.string().trim().max(30).optional(),
   viber: z.string().trim().max(30).optional(),
+  /** "1" kad je telefon ujedno i Viber broj (čekboks u formi). */
+  viberSame: z.string().optional(),
   whatsapp: z.string().trim().max(30).optional(),
   email: z.preprocess((v) => (v === "" ? undefined : v), z.email("Neispravan email").optional()),
   website: z.string().trim().max(120).optional(),
@@ -31,11 +40,23 @@ const dealerSchema = z.object({
 
 function dealerValues(d: z.infer<typeof dealerSchema>) {
   let logoKey: string | null | undefined;
-  try { logoKey = d.logo ? (JSON.parse(d.logo)[0]?.key ?? null) : null; } catch { logoKey = undefined; }
+  try {
+    logoKey = d.logo ? (JSON.parse(d.logo)[0]?.key ?? null) : null;
+  } catch {
+    logoKey = undefined;
+  }
   return {
-    name: d.name, cityId: d.cityId, address: d.address || null, phone: d.phone, phone2: d.phone2 || null,
-    viber: d.viber || null, whatsapp: d.whatsapp || null, email: d.email ?? null, website: d.website || null,
-    description: d.description || null, ...(logoKey !== undefined ? { logoKey } : {}),
+    name: d.name,
+    cityId: d.cityId,
+    address: d.address || null,
+    phone: d.phone,
+    phone2: d.phone2 || null,
+    viber: d.viber || (d.viberSame ? d.phone : null),
+    whatsapp: d.whatsapp || null,
+    email: d.email ?? null,
+    website: d.website || null,
+    description: d.description || null,
+    ...(logoKey !== undefined ? { logoKey } : {}),
   };
 }
 
@@ -57,8 +78,17 @@ export async function createDealer(_prev: FormState, fd: FormData): Promise<Form
   if (!parsed.success) return { errors: fieldErrors(parsed.error) };
 
   await db.transaction(async (tx) => {
-    await tx.insert(dealers).values({ ...dealerValues(parsed.data), ownerUserId: session.user.id, slug: await uniqueDealerSlug(parsed.data.name) });
-    await tx.update(users).set({ role: "dealer" }).where(and(eq(users.id, session.user.id), eq(users.role, "private")));
+    await tx
+      .insert(dealers)
+      .values({
+        ...dealerValues(parsed.data),
+        ownerUserId: session.user.id,
+        slug: await uniqueDealerSlug(parsed.data.name),
+      });
+    await tx
+      .update(users)
+      .set({ role: "dealer" })
+      .where(and(eq(users.id, session.user.id), eq(users.role, "private")));
   });
   redirect("/plac");
 }
@@ -92,14 +122,33 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
   if (!make || !model) return { errors: { modelId: "Model ne pripada izabranoj marci" } };
 
   const values = {
-    dealerId: dealer.id, userId: session.user.id,
-    makeId: d.makeId, modelId: d.modelId, variant: d.variant || null, year: d.year, mileageKm: d.mileageKm,
-    condition: d.condition, fuel: d.fuel, transmission: d.transmission, bodyType: d.bodyType, drive: d.drive ?? null,
-    engineCc: d.engineCc ?? null, powerKw: d.powerKw ?? null, doors: d.doors ?? null, seats: d.seats ?? null,
-    color: d.color || null, vin: d.vin || null, registeredUntil: d.registeredUntil ?? null,
-    customsCleared: d.customsCleared, isDamaged: d.isDamaged, firstOwner: d.firstOwner,
-    priceEur: d.priceOnRequest ? 0 : d.priceEur, priceNegotiable: d.priceNegotiable, priceOnRequest: d.priceOnRequest,
-    description: d.description || null, cityId: d.cityId,
+    dealerId: dealer.id,
+    userId: session.user.id,
+    makeId: d.makeId,
+    modelId: d.modelId,
+    variant: d.variant || null,
+    year: d.year,
+    mileageKm: d.mileageKm,
+    condition: d.condition,
+    fuel: d.fuel,
+    transmission: d.transmission,
+    bodyType: d.bodyType,
+    drive: d.drive ?? null,
+    engineCc: d.engineCc ?? null,
+    powerKw: d.powerKw ?? null,
+    doors: d.doors ?? null,
+    seats: d.seats ?? null,
+    color: d.color || null,
+    vin: d.vin || null,
+    registeredUntil: d.registeredUntil ?? null,
+    customsCleared: d.customsCleared,
+    isDamaged: d.isDamaged,
+    firstOwner: d.firstOwner,
+    priceEur: d.priceOnRequest ? 0 : d.priceEur,
+    priceNegotiable: d.priceNegotiable,
+    priceOnRequest: d.priceOnRequest,
+    description: d.description || null,
+    cityId: d.cityId,
     slug: listingSlug(make.name, model.name, d.variant, d.year),
   };
 
@@ -109,23 +158,45 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
   const id = await db.transaction(async (tx) => {
     let id = listingId;
     if (id) {
-      const existing = await tx.query.listings.findFirst({ where: and(eq(listings.id, id), eq(listings.dealerId, dealer.id)) });
+      const existing = await tx.query.listings.findFirst({
+        where: and(eq(listings.id, id), eq(listings.dealerId, dealer.id)),
+      });
       if (!existing) throw new Error("Oglas nije pronađen");
-      const statusPatch = publish && existing.status !== "active"
-        ? { status: "active" as const, publishedAt: now, expiresAt: expires, soldAt: null }
-        : {};
-      await tx.update(listings).set({ ...values, ...statusPatch }).where(eq(listings.id, id));
+      const statusPatch =
+        publish && existing.status !== "active"
+          ? { status: "active" as const, publishedAt: now, expiresAt: expires, soldAt: null }
+          : {};
+      await tx
+        .update(listings)
+        .set({ ...values, ...statusPatch })
+        .where(eq(listings.id, id));
       await tx.delete(listingImages).where(eq(listingImages.listingId, id));
       await tx.delete(listingFeatures).where(eq(listingFeatures.listingId, id));
     } else {
-      const [row] = await tx.insert(listings).values({
-        ...values, publicId: newPublicId(),
-        ...(publish ? { status: "active" as const, publishedAt: now, expiresAt: expires } : { status: "draft" as const }),
-      }).returning({ id: listings.id });
+      const [row] = await tx
+        .insert(listings)
+        .values({
+          ...values,
+          publicId: newPublicId(),
+          ...(publish
+            ? { status: "active" as const, publishedAt: now, expiresAt: expires }
+            : { status: "draft" as const }),
+        })
+        .returning({ id: listings.id });
       id = row.id;
     }
     if (d.images.length) {
-      await tx.insert(listingImages).values(d.images.map((img, i) => ({ listingId: id!, storageKey: img.key, width: img.width, height: img.height, sortOrder: i })));
+      await tx
+        .insert(listingImages)
+        .values(
+          d.images.map((img, i) => ({
+            listingId: id!,
+            storageKey: img.key,
+            width: img.width,
+            height: img.height,
+            sortOrder: i,
+          })),
+        );
     }
     if (d.features.length) {
       await tx.insert(listingFeatures).values(d.features.map((featureId) => ({ listingId: id!, featureId })));
@@ -144,10 +215,15 @@ export async function setListingStatus(listingId: string, status: "active" | "so
   if (!dealer) redirect("/plac/registracija");
   const now = new Date();
   const patch =
-    status === "active" ? { status, publishedAt: now, expiresAt: new Date(now.getTime() + LISTING_DAYS * 86400_000), soldAt: null }
-    : status === "sold" ? { status, soldAt: now }
-    : { status };
-  await db.update(listings).set(patch).where(and(eq(listings.id, listingId), eq(listings.dealerId, dealer.id)));
+    status === "active"
+      ? { status, publishedAt: now, expiresAt: new Date(now.getTime() + LISTING_DAYS * 86400_000), soldAt: null }
+      : status === "sold"
+        ? { status, soldAt: now }
+        : { status };
+  await db
+    .update(listings)
+    .set(patch)
+    .where(and(eq(listings.id, listingId), eq(listings.dealerId, dealer.id)));
   revalidatePath("/plac");
   updateTag(LISTINGS_TAG);
   updateTag(DEALERS_TAG);

@@ -12,7 +12,13 @@ import Button from "@/features/shared/components/ui/Button";
 import SectionHeader from "@/features/shared/components/ui/SectionHeader";
 import { setListingStatus } from "@/features/dealer-panel/actions";
 
-const STATUS_VARIANT = { draft: "default", active: "success", sold: "accent", expired: "warning", removed: "danger" } as const;
+const STATUS_VARIANT = {
+  draft: "default",
+  active: "success",
+  sold: "accent",
+  expired: "warning",
+  removed: "danger",
+} as const;
 
 export default async function DashboardPage() {
   const dealer = await requireDealer();
@@ -25,17 +31,31 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <SectionHeader as="h1" title={dealer.name} eyebrow="Moj autoplac" action={<Button href="/plac/oglasi/novi">Novi oglas</Button>} className="mb-2" />
-      <p className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
+      <SectionHeader
+        as="h1"
+        title={dealer.name}
+        eyebrow="Moj autoplac"
+        action={<Button href="/plac/oglasi/novi">Novi oglas</Button>}
+        className="mb-2"
+      />
+      <p className="text-muted mb-6 flex flex-wrap items-center gap-2 text-sm">
         <span>Status placa:</span>
-        <Badge variant={dealer.status === "active" ? "success" : dealer.status === "pending" ? "warning" : "danger"}>{DEALER_STATUS[dealer.status]}</Badge>
+        <Badge variant={dealer.status === "active" ? "success" : dealer.status === "pending" ? "warning" : "danger"}>
+          {DEALER_STATUS[dealer.status]}
+        </Badge>
         {dealer.status === "pending" && <span>Oglasi postaju javni kad odobrimo plac.</span>}
-        <span>· {visible.length} {pluralSr(visible.length, ["oglas", "oglasa", "oglasa"])}</span>
+        <span>
+          · {visible.length} {pluralSr(visible.length, ["oglas", "oglasa", "oglasa"])}
+        </span>
       </p>
 
       {visible.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-surface p-12 text-center text-sm text-muted">
-          Još nemaš oglasa. <Link href="/plac/oglasi/novi" className="font-medium text-accent hover:underline">Dodaj prvo vozilo</Link>.
+        <div className="border-border bg-surface text-muted rounded-2xl border border-dashed p-12 text-center text-sm">
+          Još nemaš oglasa.{" "}
+          <Link href="/plac/oglasi/novi" className="text-accent font-medium hover:underline">
+            Dodaj prvo vozilo
+          </Link>
+          .
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -48,22 +68,44 @@ export default async function DashboardPage() {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{listingTitle(l.make.name, l.model.name, l.variant)} <span className="font-normal text-muted">{l.year}</span></p>
-                <p className="text-sm text-muted">{l.priceOnRequest ? "Cijena na upit" : formatPrice(l.priceEur)} · {formatKm(l.mileageKm)} · {l.viewsCount} pregleda</p>
+                <p className="truncate font-semibold">
+                  {listingTitle(l.make.name, l.model.name, l.variant)}{" "}
+                  <span className="text-muted font-normal">{l.year}</span>
+                </p>
+                <p className="text-muted text-sm">
+                  {l.priceOnRequest ? "Cijena na upit" : formatPrice(l.priceEur)} · {formatKm(l.mileageKm)} ·{" "}
+                  {l.viewsCount} pregleda
+                </p>
               </div>
               <Badge variant={STATUS_VARIANT[l.status]}>{LISTING_STATUS[l.status]}</Badge>
               <div className="flex items-center gap-1">
-                <Button href={`/plac/oglasi/${l.id}`} variant="outline" size="sm">Uredi</Button>
+                <Button href={`/plac/oglasi/${l.id}`} variant="outline" size="sm">
+                  Uredi
+                </Button>
                 {l.status === "active" && (
                   <>
-                    <Button href={listingPath(l.slug, l.publicId)} variant="ghost" size="sm">Pogledaj</Button>
-                    <form action={setListingStatus.bind(null, l.id, "sold")}><Button type="submit" variant="ghost" size="sm">Prodato</Button></form>
+                    <Button href={listingPath(l.slug, l.publicId)} variant="ghost" size="sm">
+                      Pogledaj
+                    </Button>
+                    <form action={setListingStatus.bind(null, l.id, "sold")}>
+                      <Button type="submit" variant="ghost" size="sm">
+                        Prodato
+                      </Button>
+                    </form>
                   </>
                 )}
                 {(l.status === "sold" || l.status === "expired") && (
-                  <form action={setListingStatus.bind(null, l.id, "active")}><Button type="submit" variant="ghost" size="sm">Obnovi</Button></form>
+                  <form action={setListingStatus.bind(null, l.id, "active")}>
+                    <Button type="submit" variant="ghost" size="sm">
+                      Obnovi
+                    </Button>
+                  </form>
                 )}
-                <form action={setListingStatus.bind(null, l.id, "removed")}><Button type="submit" variant="ghost" size="sm" className="text-danger">Obriši</Button></form>
+                <form action={setListingStatus.bind(null, l.id, "removed")}>
+                  <Button type="submit" variant="ghost" size="sm" className="text-danger">
+                    Obriši
+                  </Button>
+                </form>
               </div>
             </li>
           ))}

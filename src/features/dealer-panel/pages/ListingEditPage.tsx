@@ -23,7 +23,12 @@ export default async function ListingEditPage({ params }: { params: Promise<{ id
       action={saveListing.bind(null, listing.id)}
       catalog={catalog}
       listing={row}
-      images={images.map((i) => ({ key: i.storageKey, url: imageUrl(i.storageKey, "card"), width: i.width ?? undefined, height: i.height ?? undefined }))}
+      images={images.map((i) => ({
+        key: i.storageKey,
+        url: imageUrl(i.storageKey, "card"),
+        width: i.width ?? undefined,
+        height: i.height ?? undefined,
+      }))}
       featureIds={features.map((f) => f.featureId)}
     />
   );
