@@ -22,13 +22,37 @@ interface SelectFieldProps {
 }
 
 /** Custom select sa labelom; radi kontrolisano (value/onChange) ili nekontrolisano (defaultValue). */
-export default function SelectField({ label, name, options, defaultValue = "", value, onChange, error, hint, required, className, ...rest }: SelectFieldProps) {
+export default function SelectField({
+  label,
+  name,
+  options,
+  defaultValue = "",
+  value,
+  onChange,
+  error,
+  hint,
+  required,
+  className,
+  ...rest
+}: SelectFieldProps) {
   const [inner, setInner] = useState(defaultValue);
   const current = value ?? inner;
-  const handle = (v: string) => { setInner(v); onChange?.(v); };
+  const handle = (v: string) => {
+    setInner(v);
+    onChange?.(v);
+  };
   return (
     <FieldWrap label={label} error={error} hint={hint} htmlFor={name} className={className} required={required}>
-      <Select id={name} name={name} options={options} value={current} onChange={handle} required={required} invalid={!!error} {...rest} />
+      <Select
+        id={name}
+        name={name}
+        options={options}
+        value={current}
+        onChange={handle}
+        required={required}
+        invalid={!!error}
+        {...rest}
+      />
     </FieldWrap>
   );
 }

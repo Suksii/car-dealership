@@ -21,15 +21,15 @@ naučena na ovom i na ksport/tehnoplus projektima; kršenje ruši `next build`.
 5. **`use cache` ne baca.** Fetcher vraća `null`, `notFound()` zove konzumer.
    Unutar `use cache` nema `cookies()`/`headers()`/per-user argumenata.
 6. **Pravi 404 na `[slug]` rutama.** Čim streaming krene, status je 200, a
-   za nepoznat param Next 16.4 servira *fallback ljusku* (`◐ /oglas/[slug]`)
+   za nepoznat param Next 16.4 servira _fallback ljusku_ (`◐ /oglas/[slug]`)
    sa 200 prije nego što stranica stigne do `notFound()`. Rješenje koje radi
    (izmjereno na `/oglas/[slug]`): `export const ensureStatic = "navigation"`
-   + `generateStaticParams` sa stvarnim slugovima + provjera postojanja na
-   keširanim podacima prije prve Suspense granice. Tada se nepoznat slug
-   renderuje do kraja prije slanja i vraća 404, a poznati se prerenderuju
-   (`○`). Uslov: ruta ne smije čitati `cookies()`/`searchParams` ni imati
-   necached podatke. Ruta koja to mora (npr. `/placevi/[slug]` sa sortom u
-   query-ju) ostaje soft-404 (200 + `noindex`), što je prihvaćeno.
+   - `generateStaticParams` sa stvarnim slugovima + provjera postojanja na
+     keširanim podacima prije prve Suspense granice. Tada se nepoznat slug
+     renderuje do kraja prije slanja i vraća 404, a poznati se prerenderuju
+     (`○`). Uslov: ruta ne smije čitati `cookies()`/`searchParams` ni imati
+     necached podatke. Ruta koja to mora (npr. `/placevi/[slug]` sa sortom u
+     query-ju) ostaje soft-404 (200 + `noindex`), što je prihvaćeno.
 7. **`redirect()`/`notFound()` nikad u `try/catch`** koji guta grešku, ni u
    `use cache`. U server akciji `signIn()` baca redirect — propusti ga
    (`throw err` ako nije `AuthError`).
@@ -48,6 +48,12 @@ naučena na ovom i na ksport/tehnoplus projektima; kršenje ruši `next build`.
     sa stranice više ne daje 404. Zato header čita sesiju na klijentu
     (`UserMenu` + `useSession`), a ne kroz `auth()` pod Suspense. Isto važi za
     `loading.tsx` iznad `[slug]` ruta.
+    Izuzetak koji je izmjeren kao bezbjedan: `usePathname()` za aktivni link u
+    headeru (`ActiveNavLinks`). Taj hook suspenduje samo na rutama sa
+    nepoznatim dinamičkim parametrom i razrješava se odmah na zahtjevu (nema
+    čekanja na podatke), pa `<Suspense fallback={<NavLinks />}>` ne mijenja
+    status. Poslije svake promjene headera ponovo izmjeriti:
+    `curl -s -o /dev/null -w '%{http_code}' localhost:3100/oglas/nema-ovoga` → 404.
 
 Provjera: `npm run build` → tabela ruta. `◐` = PPR ljuska (očekivano za sve
 stranice sa sesijom), `○` = potpuno statično, `ƒ` = dinamično (samo API).

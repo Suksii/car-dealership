@@ -1,20 +1,21 @@
 # Arhitektura — autoplac
 
 Next.js 16 (App Router, RSC, `cacheComponents`) + Postgres (Drizzle) + Auth.js v5
-+ Tailwind 4. Ovaj dokument pokriva odluke koje se ne vide iz koda.
+
+- Tailwind 4. Ovaj dokument pokriva odluke koje se ne vide iz koda.
 
 > Ovo nije Next.js iz navike — prije pisanja koda pročitaj relevantni vodič u
 > `node_modules/next/dist/docs/`.
 
 ## Domeni (`src/features/`)
 
-| Domen | Šta drži |
-|---|---|
-| `auth` | prijava/registracija (forme, server akcije), `pages/AccountPage` |
-| `dealer-panel` | panel autoplaca `/plac`: profil, oglasi, upload slika |
-| `listings` | validacija oglasa (`lib/listing.ts`), labele enuma (`lib/labels.ts`); kasnije javne stranice oglasa |
-| `home` | naslovna |
-| `shared` | `components/ui/*` (Button, Select, Field, Modal…), `components/layout/*` (Header, Footer) |
+| Domen          | Šta drži                                                                                            |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| `auth`         | prijava/registracija (forme, server akcije), `pages/AccountPage`                                    |
+| `dealer-panel` | panel autoplaca `/plac`: profil, oglasi, upload slika                                               |
+| `listings`     | validacija oglasa (`lib/listing.ts`), labele enuma (`lib/labels.ts`); kasnije javne stranice oglasa |
+| `home`         | naslovna                                                                                            |
+| `shared`       | `components/ui/*` (Button, Select, Field, Modal…), `components/layout/*` (Header, Footer)           |
 
 Svaki domen: `components/` (klijent i server komponente), `pages/` (sastavljene
 stranice koje `app/` rute renderuju), `actions.ts` (server akcije), `lib/`
@@ -50,15 +51,15 @@ na `/api/upload` odmah pri izboru fajla, forma šalje samo ključeve.
 
 ## URL-ovi
 
-| Ruta | Šta |
-|---|---|
-| `/` | naslovna |
-| `/automobili` | svi oglasi, filteri u query-ju (`?marka=&model=&cijena_do=…`) |
-| `/oglas/[slug]-[publicId]` | oglas; slug nije jedinstven, publicId jeste |
-| `/placevi`, `/placevi/[slug]` | lista placeva, stranica placa |
-| `/plac/*` | panel autoplaca (zaštićeno) |
-| `/prijava`, `/registracija`, `/nalog` | auth |
-| `/admin/*` | admin (uloga `admin`) |
+| Ruta                                  | Šta                                                           |
+| ------------------------------------- | ------------------------------------------------------------- |
+| `/`                                   | naslovna                                                      |
+| `/automobili`                         | svi oglasi, filteri u query-ju (`?marka=&model=&cijena_do=…`) |
+| `/oglas/[slug]-[publicId]`            | oglas; slug nije jedinstven, publicId jeste                   |
+| `/placevi`, `/placevi/[slug]`         | lista placeva, stranica placa                                 |
+| `/plac/*`                             | panel autoplaca (zaštićeno)                                   |
+| `/prijava`, `/registracija`, `/nalog` | auth                                                          |
+| `/admin/*`                            | admin (uloga `admin`)                                         |
 
 ## Provjere
 

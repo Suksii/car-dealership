@@ -11,7 +11,7 @@ export default function Checkbox({ label, className, ...props }: CheckboxProps) 
     <label className={cn("group flex cursor-pointer items-center gap-2.5 select-none", className)}>
       <span className="relative flex-none">
         <input type="checkbox" className="peer sr-only" {...props} />
-        <span className="flex h-[18px] w-[18px] items-center justify-center rounded-[5px] border border-border bg-white transition-colors group-hover:border-foreground peer-checked:border-foreground peer-checked:bg-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-accent/30">
+        <span className="border-border group-hover:border-foreground peer-checked:border-foreground peer-checked:bg-foreground peer-focus-visible:ring-accent/30 flex h-[18px] w-[18px] items-center justify-center rounded-[5px] border bg-white transition-colors peer-focus-visible:ring-2">
           <Check size={11} strokeWidth={3} className="text-white" aria-hidden="true" />
         </span>
       </span>

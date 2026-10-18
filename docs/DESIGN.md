@@ -17,16 +17,16 @@ zaobljeni uglovi, puno prostora, jedan akcenat), prilagođen oglasniku:
 
 ## Tokeni (`src/app/globals.css` → `@theme`)
 
-| Token | Upotreba |
-|---|---|
-| `foreground` #111318 | tekst, tamna dugmad, znak loga |
-| `background` #f5f5f6 | pozadina stranice |
-| `surface` #fff | kartice, header, forme |
-| `muted` | sekundarni tekst, labele |
-| `border` | 10% foreground, sve ivice |
-| `accent` #2457f5 | CTA, linkovi na hover, aktivno stanje, tačka u logu |
-| `success` / `warning` / `danger` | statusi oglasa i placa, greške |
-| `shadow-card`, `shadow-custom` | kartice, dropdown-i |
+| Token                            | Upotreba                                            |
+| -------------------------------- | --------------------------------------------------- |
+| `foreground` #111318             | tekst, tamna dugmad, znak loga                      |
+| `background` #f5f5f6             | pozadina stranice                                   |
+| `surface` #fff                   | kartice, header, forme                              |
+| `muted`                          | sekundarni tekst, labele                            |
+| `border`                         | 10% foreground, sve ivice                           |
+| `accent` #2457f5                 | CTA, linkovi na hover, aktivno stanje, tačka u logu |
+| `success` / `warning` / `danger` | statusi oglasa i placa, greške                      |
+| `shadow-card`, `shadow-custom`   | kartice, dropdown-i                                 |
 
 Utility klase: `container-page` (max 7xl), `container-narrow` (3xl),
 `container-box` (bijela kartica sa paddingom), `grid-listings`, `eyebrow`,

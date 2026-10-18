@@ -29,22 +29,44 @@ export default function Pagination({ currentPage, lastPage, hrefTemplate, classN
 
   return (
     <nav className={cn("flex items-center justify-center gap-1.5", className)} aria-label="Stranice">
-      {currentPage > 1
-        ? <Link href={href(currentPage - 1)} className={cn(btn, "hover:border-foreground")} aria-label="Prethodna"><ChevronLeft size={16} /></Link>
-        : <span className={cn(btn, "opacity-40")}><ChevronLeft size={16} /></span>}
+      {currentPage > 1 ? (
+        <Link href={href(currentPage - 1)} className={cn(btn, "hover:border-foreground")} aria-label="Prethodna">
+          <ChevronLeft size={16} />
+        </Link>
+      ) : (
+        <span className={cn(btn, "opacity-40")}>
+          <ChevronLeft size={16} />
+        </span>
+      )}
       {pages.map((p, i) =>
         p === "..." ? (
-          <span key={`dot-${i}`} className="px-1 text-muted">…</span>
+          <span key={`dot-${i}`} className="text-muted px-1">
+            …
+          </span>
         ) : (
-          <Link key={p} href={href(p)} aria-current={p === currentPage ? "page" : undefined}
-            className={cn(btn, "text-sm font-medium", p === currentPage ? "border-foreground bg-foreground text-white" : "hover:border-foreground")}>
+          <Link
+            key={p}
+            href={href(p)}
+            aria-current={p === currentPage ? "page" : undefined}
+            className={cn(
+              btn,
+              "text-sm font-medium",
+              p === currentPage ? "border-foreground bg-foreground text-white" : "hover:border-foreground",
+            )}
+          >
             {p}
           </Link>
         ),
       )}
-      {currentPage < lastPage
-        ? <Link href={href(currentPage + 1)} className={cn(btn, "hover:border-foreground")} aria-label="Sljedeća"><ChevronRight size={16} /></Link>
-        : <span className={cn(btn, "opacity-40")}><ChevronRight size={16} /></span>}
+      {currentPage < lastPage ? (
+        <Link href={href(currentPage + 1)} className={cn(btn, "hover:border-foreground")} aria-label="Sljedeća">
+          <ChevronRight size={16} />
+        </Link>
+      ) : (
+        <span className={cn(btn, "opacity-40")}>
+          <ChevronRight size={16} />
+        </span>
+      )}
     </nav>
   );
 }

@@ -6,17 +6,17 @@ type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-accent text-white hover:bg-accent-hover",
-  secondary: "bg-foreground text-white hover:opacity-85",
-  outline: "border border-border bg-white hover:border-foreground",
-  ghost: "hover:bg-neutral-100",
-  danger: "bg-danger text-white hover:opacity-85",
+  primary: "bg-accent text-white shadow-xs hover:bg-accent-hover",
+  secondary: "bg-foreground text-white shadow-xs hover:bg-neutral-800",
+  outline: "border border-border bg-surface text-foreground shadow-xs hover:border-neutral-400 hover:bg-neutral-50",
+  ghost: "text-foreground hover:bg-neutral-100",
+  danger: "bg-danger text-white shadow-xs hover:opacity-90",
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: "h-9 px-3.5 text-xs",
+  sm: "h-9 px-3.5 text-sm",
   md: "h-11 px-5 text-sm",
-  lg: "h-12 px-7 text-sm",
+  lg: "h-12 px-6 text-base",
   icon: "h-10 w-10",
 };
 
@@ -29,12 +29,36 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
 }
 
-export default function Button({ variant = "primary", size = "md", fullWidth, href, className, children, ...props }: ButtonProps) {
+/** Zaobljenje prati polja forme (rounded-xl) da dugme uz polje izgleda kao dio iste forme. */
+export default function Button({
+  variant = "primary",
+  size = "md",
+  fullWidth,
+  href,
+  className,
+  children,
+  ...props
+}: ButtonProps) {
   const base = cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-[background-color,border-color,opacity] duration-150 cursor-pointer select-none disabled:cursor-not-allowed disabled:opacity-40",
-    VARIANTS[variant], SIZES[size], fullWidth && "w-full", className,
+    "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl font-semibold whitespace-nowrap select-none",
+    "transition-[background-color,border-color,opacity,transform] duration-150 active:translate-y-px",
+    "outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "disabled:pointer-events-none disabled:opacity-40",
+    VARIANTS[variant],
+    SIZES[size],
+    fullWidth && "w-full",
+    className,
   );
-  if (href) return <Link href={href} className={base}>{children}</Link>;
-  return <button className={base} {...props}>{children}</button>;
+  if (href)
+    return (
+      <Link href={href} className={base}>
+        {children}
+      </Link>
+    );
+  return (
+    <button className={base} {...props}>
+      {children}
+    </button>
+  );
 }
 export type { ButtonVariant, ButtonSize };
