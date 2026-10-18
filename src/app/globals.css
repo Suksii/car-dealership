@@ -1,28 +1,29 @@
 @import "tailwindcss";
 
+/* Sirovi tokeni. Tailwind klase (bg-accent, text-muted...) nastaju iz @theme mape ispod. */
 :root {
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-accent-light: #eff6ff;
-  --color-fg: #18181b;
-  --color-muted: #71717a;
-  --color-border: #e4e4e7;
-  --color-surface: #f4f4f5;
-  --color-danger: #dc2626;
-  --color-success: #16a34a;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #eff6ff;
+  --fg: #18181b;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --surface: #f4f4f5;
+  --danger: #dc2626;
+  --success: #16a34a;
 }
 
 @theme inline {
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --color-accent: var(--color-accent);
-  --color-accent-hover: var(--color-accent-hover);
-  --color-accent-light: var(--color-accent-light);
-  --color-fg: var(--color-fg);
-  --color-muted: var(--color-muted);
-  --color-border: var(--color-border);
-  --color-surface: var(--color-surface);
-  --color-danger: var(--color-danger);
-  --color-success: var(--color-success);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
 }
 
 body {
