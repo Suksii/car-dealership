@@ -38,7 +38,8 @@ koji na telefonu skroluje horizontalno, na desktopu je flex red), `img-fade`,
 ## Komponente (`src/features/shared/components/ui/`)
 
 Button (rounded-xl; primary = tamno, secondary = accent, outline, ghost, danger, viber, whatsapp), Badge, Checkbox (nativni input, radi u server
-formama), Toggle, Select (custom, tastatura, searchable, hidden input za
+formama), Toggle, Select (naš: na desktopu panel sa zaobljenim redovima i × za brisanje,
+na telefonu donji sheet preko portala; tastatura, searchable, hidden input za
 FormData), SelectField, Field/TextareaField/SubmitButton, Modal (portal,
 framer-motion), Pagination, Breadcrumbs, SectionHeader, Skeleton, Logo.
 

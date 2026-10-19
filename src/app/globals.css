@@ -89,6 +89,14 @@
     display: none;
   }
 }
+/* Donji „sheet" na telefonu (Select, kasnije filteri): visina i safe-area bez arbitrary vrijednosti u JSX-u. */
+@utility sheet {
+  max-height: 85dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility sheet-list {
+  max-height: 60dvh;
+}
 @utility img-fade {
   @apply bg-gradient-to-t from-black/60 via-black/0 to-black/0;
 }
