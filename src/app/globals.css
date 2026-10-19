@@ -107,6 +107,11 @@
 @utility sheet-list {
   max-height: 60dvh;
 }
+/* Sheet filtera: skoro cio ekran, zaglavlje i podnožje fiksni, sadržaj skroluje. */
+@utility sheet-full {
+  height: 92dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
 /* Animacije otvaranja i zatvaranja (dijalog, sheet, meni). Zatvaranje kroz usePresence; framer-motion se ne koristi. */
 @keyframes fade-in {
   from {

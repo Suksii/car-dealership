@@ -1,6 +1,7 @@
 import { getCatalog } from "@/lib/catalog";
 import { getListings } from "@/features/listings/api/getListings";
-import { parseFilters, filtersToQuery, countActiveFilters } from "@/features/listings/lib/filters";
+import { parseFilters, filtersToQuery, countActiveFilters, activeFilterChips } from "@/features/listings/lib/filters";
+import ActiveFilterChips from "@/features/listings/components/ActiveFilterChips";
 import ListingCard from "@/features/listings/components/ListingCard";
 import ListingFilters from "@/features/listings/components/ListingFilters";
 import { ListingsTransitionProvider, ListingsPendingDim } from "@/features/listings/components/ListingsTransition";
@@ -20,6 +21,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
     .filter((m) => m.makeId === makeIdSel)
     .map(({ id, makeId, name, slug }) => ({ id, makeId, name, slug }));
   const activeCount = countActiveFilters(filters);
+  const chips = activeFilterChips(filters, { makes, models, cities });
   const makeName = makes.find((m) => m.slug === filters.make)?.name;
   const modelName = models.find(
     (m) => m.slug === filters.model && m.makeId === makes.find((mk) => mk.slug === filters.make)?.id,
@@ -40,7 +42,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
               {result.total} {pluralSr(result.total, ["oglas", "oglasa", "oglasa"])}
             </p>
           </div>
-          <SortSelect filters={filters} />
+          <SortSelect filters={filters} className="hidden lg:block" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -52,9 +54,13 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
               models={slimModels}
               cities={cities}
               activeCount={activeCount}
-            />
+              total={result.total}
+            >
+              <SortSelect filters={filters} className="min-w-0 flex-1" />
+            </ListingFilters>
           </div>
           <ListingsPendingDim>
+            <ActiveFilterChips chips={chips} className="mb-4 flex flex-wrap gap-2" />
             {result.items.length === 0 ? (
               <div className="border-border bg-surface text-muted rounded-2xl border border-dashed p-12 text-center">
                 Nema oglasa za izabrane filtere. Probaj da ukloniš neki filter.

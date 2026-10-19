@@ -1,5 +1,6 @@
 import type { ListingFilters } from "@/features/listings/api/getListings";
 import { FUEL, TRANSMISSION, BODY } from "./labels";
+import { formatPrice, formatKm } from "@/lib/utils/format";
 
 type SP = Record<string, string | string[] | undefined>;
 const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined;
@@ -88,4 +89,48 @@ export function countActiveFilters(f: ListingFilters): number {
       "body",
     ] as const
   ).filter((k) => f[k] !== undefined).length;
+}
+
+export interface FilterChip {
+  key: keyof ListingFilters;
+  label: string;
+  /** Query string bez tog filtera (bez page). */
+  query: string;
+}
+
+type Named = { slug: string; name: string };
+type ChipCatalog = { makes: Named[]; models: Named[]; cities: Named[] };
+
+/**
+ * Aktivni filteri kao čipovi „BMW ×", „do 10.000 € ×"; uklanjanje marke uklanja i model.
+ * Opsezi (cijena, godište) se spajaju u jedan čip kad su obje granice zadate.
+ */
+export function activeFilterChips(f: ListingFilters, cat: ChipCatalog): FilterChip[] {
+  const chips: FilterChip[] = [];
+  const without = (...keys: (keyof ListingFilters)[]) =>
+    filtersToQuery(f, { ...Object.fromEntries(keys.map((k) => [k, undefined])), page: undefined });
+  const push = (key: keyof ListingFilters, label: string, ...extra: (keyof ListingFilters)[]) =>
+    chips.push({ key, label, query: without(key, ...extra) });
+
+  const nameOf = (list: Named[], slug: string | undefined) => list.find((x) => x.slug === slug)?.name ?? slug;
+  if (f.make) push("make", nameOf(cat.makes, f.make) ?? f.make, "model");
+  if (f.model) push("model", nameOf(cat.models, f.model) ?? f.model);
+  if (f.priceMin && f.priceMax)
+    chips.push({
+      key: "priceMin",
+      label: `${formatPrice(f.priceMin)} – ${formatPrice(f.priceMax)}`,
+      query: without("priceMin", "priceMax"),
+    });
+  else if (f.priceMin) push("priceMin", `od ${formatPrice(f.priceMin)}`);
+  else if (f.priceMax) push("priceMax", `do ${formatPrice(f.priceMax)}`);
+  if (f.yearMin && f.yearMax)
+    chips.push({ key: "yearMin", label: `${f.yearMin} – ${f.yearMax}`, query: without("yearMin", "yearMax") });
+  else if (f.yearMin) push("yearMin", `od ${f.yearMin}.`);
+  else if (f.yearMax) push("yearMax", `do ${f.yearMax}.`);
+  if (f.kmMax) push("kmMax", `do ${formatKm(f.kmMax)}`);
+  if (f.fuel) push("fuel", FUEL[f.fuel]);
+  if (f.transmission) push("transmission", TRANSMISSION[f.transmission]);
+  if (f.body) push("body", BODY[f.body]);
+  if (f.city) push("city", nameOf(cat.cities, f.city) ?? f.city);
+  return chips;
 }

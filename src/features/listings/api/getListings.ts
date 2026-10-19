@@ -103,6 +103,22 @@ export async function getListings(
   return { items, total, page, lastPage: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
 }
 
+/** Samo broj oglasa za filtere (dugme „Prikaži N oglasa" u sheet-u na telefonu). Isti keš i tag kao lista. */
+export async function countListings(f: ListingFilters): Promise<number> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(LISTINGS_TAG);
+  const [row] = await db
+    .select({ n: count() })
+    .from(listings)
+    .innerJoin(dealers, eq(dealers.id, listings.dealerId))
+    .innerJoin(makes, eq(makes.id, listings.makeId))
+    .innerJoin(models, eq(models.id, listings.modelId))
+    .innerJoin(cities, eq(cities.id, listings.cityId))
+    .where(and(publicListing(), ...whereFor(f)));
+  return row?.n ?? 0;
+}
+
 export async function getLatestListings(limit = 8): Promise<ListingCardItem[]> {
   "use cache";
   cacheLife("hours");
