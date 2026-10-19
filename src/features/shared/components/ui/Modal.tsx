@@ -7,6 +7,8 @@ import { useIsClient } from "@/lib/hooks/useIsClient";
 import { useBodyScrollLock } from "@/lib/hooks/useBodyScrollLock";
 import { useKeyboardNav } from "@/lib/hooks/useKeyboardNav";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
+import { usePresence } from "@/lib/hooks/usePresence";
+import { cn } from "@/lib/utils/cn";
 
 interface ModalProps {
   open: boolean;
@@ -23,11 +25,15 @@ export default function Modal({ open, onClose, label, maxWidth = "max-w-2xl", ch
   useKeyboardNav({ Escape: onClose }, { enabled: open });
   useFocusTrap(panelRef, open);
   const isClient = useIsClient();
-  if (!isClient || !open) return null;
+  const { mounted, closing } = usePresence(open);
+  if (!isClient || !mounted) return null;
 
   return createPortal(
     <>
-      <div aria-hidden="true" className="anim-fade-in fixed inset-0 z-70 bg-black/50" />
+      <div
+        aria-hidden="true"
+        className={cn("fixed inset-0 z-70 bg-black/50", closing ? "anim-fade-out" : "anim-fade-in")}
+      />
       <div onClick={onClose} className="fixed inset-0 z-80 flex items-center justify-center p-4">
         <div
           ref={panelRef}
@@ -36,7 +42,12 @@ export default function Modal({ open, onClose, label, maxWidth = "max-w-2xl", ch
           aria-label={label}
           tabIndex={-1}
           onClick={(e) => e.stopPropagation()}
-          className={`anim-pop-in relative w-full ${maxWidth} overflow-hidden rounded-2xl bg-white shadow-2xl outline-none`}
+          inert={closing}
+          className={cn(
+            "relative w-full overflow-hidden rounded-2xl bg-white shadow-2xl outline-none",
+            maxWidth,
+            closing ? "anim-pop-out" : "anim-pop-in",
+          )}
         >
           <button
             type="button"

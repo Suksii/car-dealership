@@ -9,6 +9,7 @@ import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { useBodyScrollLock } from "@/lib/hooks/useBodyScrollLock";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { useIsClient } from "@/lib/hooks/useIsClient";
+import { usePresence } from "@/lib/hooks/usePresence";
 import { BREAKPOINTS } from "@/lib/breakpoints";
 
 export interface SelectOption {
@@ -74,6 +75,7 @@ export default function Select({
   const listId = useId();
   const isSheet = useMediaQuery(SHEET_QUERY);
   const isClient = useIsClient();
+  const sheet = usePresence(open && isSheet);
 
   const selected = options.find((o) => o.value === value);
   const q = query.trim().toLowerCase();
@@ -266,7 +268,7 @@ export default function Select({
         </div>
       )}
 
-      {open &&
+      {sheet.mounted &&
         isSheet &&
         isClient &&
         createPortal(
@@ -274,7 +276,7 @@ export default function Select({
             <div
               aria-hidden="true"
               onClick={() => setOpen(false)}
-              className="anim-fade-in fixed inset-0 z-70 bg-black/40"
+              className={cn("fixed inset-0 z-70 bg-black/40", sheet.closing ? "anim-fade-out" : "anim-fade-in")}
             />
             <div
               ref={sheetRef}
@@ -283,7 +285,11 @@ export default function Select({
               aria-label={ariaLabel ?? placeholder}
               tabIndex={-1}
               onKeyDown={onKeyDown}
-              className="sheet anim-slide-up fixed inset-x-0 bottom-0 z-80 flex flex-col rounded-t-3xl bg-white shadow-2xl outline-none"
+              inert={sheet.closing}
+              className={cn(
+                "sheet fixed inset-x-0 bottom-0 z-80 flex flex-col rounded-t-3xl bg-white shadow-2xl outline-none",
+                sheet.closing ? "anim-slide-down" : "anim-slide-up",
+              )}
             >
               <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />
               <div className="flex items-center justify-between gap-3 px-5 pt-3 pb-2">

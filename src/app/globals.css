@@ -107,7 +107,7 @@
 @utility sheet-list {
   max-height: 60dvh;
 }
-/* Animacije otvaranja (dijalog, sheet, meni). Zatvaranje je trenutno; framer-motion se ne koristi. */
+/* Animacije otvaranja i zatvaranja (dijalog, sheet, meni). Zatvaranje kroz usePresence; framer-motion se ne koristi. */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -140,6 +140,39 @@
 }
 @utility anim-pop-in {
   animation: pop-in 0.2s ease-out both;
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes slide-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes slide-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+}
+@utility anim-fade-out {
+  animation: fade-out 0.2s ease-in both;
+}
+@utility anim-slide-down {
+  animation: slide-down 0.2s ease-in both;
+}
+@utility anim-slide-out-right {
+  animation: slide-out-right 0.2s ease-in both;
+}
+@utility anim-pop-out {
+  animation: pop-out 0.2s ease-in both;
 }
 /* Povratne mikro-animacije: srce pri čuvanju, nova slika u galeriji. */
 @keyframes heart-pop {

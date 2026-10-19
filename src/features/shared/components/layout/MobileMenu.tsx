@@ -7,6 +7,8 @@ import { useIsClient } from "@/lib/hooks/useIsClient";
 import { useBodyScrollLock } from "@/lib/hooks/useBodyScrollLock";
 import { useKeyboardNav } from "@/lib/hooks/useKeyboardNav";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
+import { usePresence } from "@/lib/hooks/usePresence";
+import { cn } from "@/lib/utils/cn";
 import ActiveNavLinks from "@/features/shared/components/layout/ActiveNavLinks";
 
 /** Hamburger + panel sa linkovima; `children` je UserMenu koji ulazi kao prop. */
@@ -18,6 +20,7 @@ export default function MobileMenu({ children }: { children: ReactNode }) {
   useKeyboardNav({ Escape: close }, { enabled: open });
   useFocusTrap(panelRef, open);
   const isClient = useIsClient();
+  const { mounted, closing } = usePresence(open);
 
   return (
     <>
@@ -32,10 +35,14 @@ export default function MobileMenu({ children }: { children: ReactNode }) {
         <Menu size={22} aria-hidden="true" />
       </button>
       {isClient &&
-        open &&
+        mounted &&
         createPortal(
           <>
-            <div aria-hidden="true" onClick={close} className="anim-fade-in fixed inset-0 z-70 bg-black/40" />
+            <div
+              aria-hidden="true"
+              onClick={close}
+              className={cn("fixed inset-0 z-70 bg-black/40", closing ? "anim-fade-out" : "anim-fade-in")}
+            />
             <div
               ref={panelRef}
               id="mobile-menu"
@@ -43,7 +50,11 @@ export default function MobileMenu({ children }: { children: ReactNode }) {
               aria-modal="true"
               aria-label="Meni"
               tabIndex={-1}
-              className="anim-slide-in-right bg-surface fixed inset-y-2 right-2 z-80 flex w-[min(320px,85vw)] flex-col rounded-2xl p-5 shadow-2xl outline-none"
+              inert={closing}
+              className={cn(
+                "bg-surface fixed inset-y-2 right-2 z-80 flex w-[min(320px,85vw)] flex-col rounded-2xl p-5 shadow-2xl outline-none",
+                closing ? "anim-slide-out-right" : "anim-slide-in-right",
+              )}
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold">Meni</span>
