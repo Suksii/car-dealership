@@ -141,6 +141,18 @@
 @utility anim-pop-in {
   animation: pop-in 0.2s ease-out both;
 }
+/* Povratne mikro-animacije: srce pri čuvanju, nova slika u galeriji. */
+@keyframes heart-pop {
+  40% {
+    transform: scale(1.35);
+  }
+}
+@utility anim-heart-pop {
+  animation: heart-pop 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@utility anim-img-in {
+  animation: fade-in 0.2s ease-out both;
+}
 @utility img-fade {
   @apply bg-gradient-to-t from-black/60 via-black/0 to-black/0;
 }

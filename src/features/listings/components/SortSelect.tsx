@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import Select from "@/features/shared/components/ui/Select";
 import { SORT_OPTIONS, filtersToQuery } from "@/features/listings/lib/filters";
+import { useListingsTransition } from "@/features/listings/components/ListingsTransition";
 import type { ListingFilters } from "@/features/listings/api/getListings";
 
 export default function SortSelect({
@@ -13,6 +14,7 @@ export default function SortSelect({
   basePath?: string;
 }) {
   const router = useRouter();
+  const { startTransition } = useListingsTransition();
   return (
     <div className="w-56">
       <Select
@@ -22,7 +24,7 @@ export default function SortSelect({
         value={filters.sort ?? "newest"}
         onChange={(v) => {
           const q = filtersToQuery({ ...filters, sort: v as ListingFilters["sort"], page: 1 });
-          router.push(`${basePath}${q ? `?${q}` : ""}`);
+          startTransition(() => router.push(`${basePath}${q ? `?${q}` : ""}`));
         }}
       />
     </div>

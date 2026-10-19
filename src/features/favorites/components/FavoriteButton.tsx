@@ -1,10 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Heart } from "lucide-react";
 import { useFavorites } from "@/features/favorites/components/FavoritesProvider";
 import { cn } from "@/lib/utils/cn";
 
-/** Srce na kartici/oglasu. Iznad overlay linka kartice (relative z-10). */
 export default function FavoriteButton({
   listingId,
   className,
@@ -16,6 +16,7 @@ export default function FavoriteButton({
 }) {
   const { isFavorite, toggle } = useFavorites();
   const on = isFavorite(listingId);
+  const [pop, setPop] = useState(false);
   return (
     <button
       type="button"
@@ -25,6 +26,7 @@ export default function FavoriteButton({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (!on) setPop(true);
         void toggle(listingId);
       }}
       className={cn(
@@ -33,7 +35,12 @@ export default function FavoriteButton({
         className,
       )}
     >
-      <Heart size={size} className={cn(on && "fill-current")} aria-hidden="true" />
+      <Heart
+        size={size}
+        className={cn(on && "fill-current", pop && "anim-heart-pop")}
+        onAnimationEnd={() => setPop(false)}
+        aria-hidden="true"
+      />
     </button>
   );
 }

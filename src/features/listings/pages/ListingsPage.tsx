@@ -3,6 +3,7 @@ import { getListings } from "@/features/listings/api/getListings";
 import { parseFilters, filtersToQuery, countActiveFilters } from "@/features/listings/lib/filters";
 import ListingCard from "@/features/listings/components/ListingCard";
 import ListingFilters from "@/features/listings/components/ListingFilters";
+import { ListingsTransitionProvider, ListingsPendingDim } from "@/features/listings/components/ListingsTransition";
 import SortSelect from "@/features/listings/components/SortSelect";
 import Pagination from "@/features/shared/components/ui/Pagination";
 import Breadcrumbs from "@/features/shared/components/ui/Breadcrumbs";
@@ -11,11 +12,10 @@ import { pluralSr } from "@/lib/utils/format";
 type SP = Record<string, string | string[] | undefined>;
 
 export default async function ListingsPage({ searchParams }: { searchParams: Promise<SP> }) {
-  const sp = await searchParams; // pod Suspense (docs/RENDERING.md, pravilo 1)
+  const sp = await searchParams;
   const filters = parseFilters(sp);
   const [{ makes, models, cities }, result] = await Promise.all([getCatalog(), getListings(filters)]);
   const makeIdSel = makes.find((mk) => mk.slug === filters.make)?.id;
-  // Samo modeli izabrane marke idu u HTML; ostale klijent traži kroz loadModels.
   const slimModels = models
     .filter((m) => m.makeId === makeIdSel)
     .map(({ id, makeId, name, slug }) => ({ id, makeId, name, slug }));
@@ -28,49 +28,53 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
   const hrefTemplate = `/automobili?${filtersToQuery({ ...filters, page: undefined })}${activeCount || (filters.sort && filters.sort !== "newest") ? "&" : ""}page={page}`;
 
   return (
-    <div className="container-page py-8">
-      <Breadcrumbs items={[{ label: "Automobili", href: "/automobili" }, ...(makeName ? [{ label: makeName }] : [])]} />
-      <div className="mt-4 mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-          <p className="text-muted mt-1 text-sm">
-            {result.total} {pluralSr(result.total, ["oglas", "oglasa", "oglasa"])}
-          </p>
+    <ListingsTransitionProvider>
+      <div className="container-page py-8">
+        <Breadcrumbs
+          items={[{ label: "Automobili", href: "/automobili" }, ...(makeName ? [{ label: makeName }] : [])]}
+        />
+        <div className="mt-4 mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+            <p className="text-muted mt-1 text-sm">
+              {result.total} {pluralSr(result.total, ["oglas", "oglasa", "oglasa"])}
+            </p>
+          </div>
+          <SortSelect filters={filters} />
         </div>
-        <SortSelect filters={filters} />
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        <div>
-          <ListingFilters
-            key={JSON.stringify(filters)}
-            filters={filters}
-            makes={makes}
-            models={slimModels}
-            cities={cities}
-            activeCount={activeCount}
-          />
-        </div>
-        <div>
-          {result.items.length === 0 ? (
-            <div className="border-border bg-surface text-muted rounded-2xl border border-dashed p-12 text-center">
-              Nema oglasa za izabrane filtere. Probaj da ukloniš neki filter.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {result.items.map((item, i) => (
-                <ListingCard key={item.id} item={item} priority={i < 3} />
-              ))}
-            </div>
-          )}
-          <Pagination
-            currentPage={result.page}
-            lastPage={result.lastPage}
-            hrefTemplate={hrefTemplate}
-            className="mt-10"
-          />
+        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+          <div>
+            <ListingFilters
+              key={JSON.stringify(filters)}
+              filters={filters}
+              makes={makes}
+              models={slimModels}
+              cities={cities}
+              activeCount={activeCount}
+            />
+          </div>
+          <ListingsPendingDim>
+            {result.items.length === 0 ? (
+              <div className="border-border bg-surface text-muted rounded-2xl border border-dashed p-12 text-center">
+                Nema oglasa za izabrane filtere. Probaj da ukloniš neki filter.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {result.items.map((item, i) => (
+                  <ListingCard key={item.id} item={item} priority={i < 3} />
+                ))}
+              </div>
+            )}
+            <Pagination
+              currentPage={result.page}
+              lastPage={result.lastPage}
+              hrefTemplate={hrefTemplate}
+              className="mt-10"
+            />
+          </ListingsPendingDim>
         </div>
       </div>
-    </div>
+    </ListingsTransitionProvider>
   );
 }

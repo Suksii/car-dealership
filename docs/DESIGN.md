@@ -77,9 +77,14 @@ Nova dijeljena komponenta: prvo provjeri `ksport-new/features/shared/components/
   dugmad samo sa ikonom imaju `aria-label`, kontrast iz tokena.
 - Bez arbitrary vrijednosti u JSX-u; bez `zinc`/`blue`/`gray` klasa — tokeni.
 - Animacije: samo CSS (`anim-fade-in`, `anim-pop-in`, `anim-slide-up`,
-  `anim-slide-in-right` iz `globals.css`), ≤ 250ms, zatvaranje bez animacije;
-  `prefers-reduced-motion` ih globalno gasi. `framer-motion` se ne uvozi
-  (45 KB gz na svakoj stranici), bez animacija na listama dužim od 20 stavki.
+  `anim-slide-in-right`, `anim-heart-pop`, `anim-img-in` iz `globals.css`),
+  ≤ 250ms, zatvaranje bez animacije; `prefers-reduced-motion` ih globalno gasi.
+  `framer-motion` se ne uvozi (45 KB gz na svakoj stranici), bez animacija na
+  listama dužim od 20 stavki. Bez ulaznih animacija pri učitavanju stranice
+  (fade-up na gridu, scroll-reveal): LCP element sa `opacity: 0` se ne računa
+  dok ne postane vidljiv, pa svaki takav efekat direktno pomjera LCP. Animira se
+  samo odgovor na akciju korisnika (otvaranje, čuvanje, promjena slike, pending
+  stanje liste kroz `ListingsPendingDim`).
 
 ## Logo
 

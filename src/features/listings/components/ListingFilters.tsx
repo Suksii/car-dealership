@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import Select from "@/features/shared/components/ui/Select";
@@ -9,6 +9,7 @@ import { FieldWrap } from "@/features/shared/components/ui/Field";
 import { FUEL, TRANSMISSION, BODY } from "@/features/listings/lib/labels";
 import { filtersToQuery } from "@/features/listings/lib/filters";
 import { loadModels } from "@/features/listings/catalog-actions";
+import { useListingsTransition } from "@/features/listings/components/ListingsTransition";
 import type { SlimModel } from "@/features/listings/api/getModels";
 import type { ListingFilters as Filters } from "@/features/listings/api/getListings";
 import type { Catalog } from "@/lib/catalog";
@@ -17,7 +18,6 @@ import { cn } from "@/lib/utils/cn";
 type Props = {
   filters: Filters;
   makes: Catalog["makes"];
-  /** Modeli trenutno izabrane marke (iz URL-a); za drugu marku se učitavaju kroz loadModels. */
   models: SlimModel[];
   cities: Catalog["cities"];
   activeCount: number;
@@ -43,7 +43,7 @@ const KMS = [50000, 100000, 150000, 200000, 250000, 300000].map((k) => ({
 
 export default function ListingFilters({ filters, makes, models, cities, activeCount }: Props) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const { pending, startTransition } = useListingsTransition();
   const [open, setOpen] = useState(false);
   const [f, setF] = useState<Filters>(filters);
   const [modelList, setModelList] = useState<SlimModel[]>(models);

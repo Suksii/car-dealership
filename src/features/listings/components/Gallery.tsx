@@ -10,28 +10,50 @@ type Img = { full: string; thumb: string };
 
 export default function Gallery({ images, alt }: { images: Img[]; alt: string }) {
   const [i, setI] = useState(0);
-  const prev = () => setI((v) => (v - 1 + images.length) % images.length);
-  const next = () => setI((v) => (v + 1) % images.length);
+  const [prevI, setPrevI] = useState<number | null>(null);
+  const [loaded, setLoaded] = useState(true);
+  const go = (k: number) => {
+    if (k === i) return;
+    setPrevI(i);
+    setLoaded(false);
+    setI(k);
+  };
+  const prev = () => go((i - 1 + images.length) % images.length);
+  const next = () => go((i + 1) % images.length);
   useKeyboardNav({ ArrowLeft: prev, ArrowRight: next }, { enabled: images.length > 1 });
 
   if (images.length === 0) {
     return (
-      <div className="text-muted flex aspect-[4/3] items-center justify-center rounded-2xl bg-neutral-100">
+      <div className="text-muted flex aspect-4/3 items-center justify-center rounded-2xl bg-neutral-100">
         Bez slika
       </div>
     );
   }
   return (
     <div className="flex flex-col gap-2">
-      <div className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-100">
+      <div className="group relative aspect-4/3 overflow-hidden rounded-2xl bg-neutral-100">
+        {prevI !== null && prevI !== i && (
+          <Image
+            key={`prev-${images[prevI].full}`}
+            src={images[prevI].full}
+            alt=""
+            fill
+            sizes="(max-width: 1024px) 100vw, 60vw"
+            className="object-cover"
+            aria-hidden="true"
+          />
+        )}
         <Image
           key={images[i].full}
           src={images[i].full}
           alt={`${alt} – slika ${i + 1}`}
           fill
-          priority
+          priority={i === 0}
           sizes="(max-width: 1024px) 100vw, 60vw"
-          className="object-cover"
+          onLoad={() => setLoaded(true)}
+          onError={() => setLoaded(true)}
+          onAnimationEnd={() => setPrevI(null)}
+          className={cn("object-cover", loaded ? "anim-img-in" : "opacity-0")}
         />
         {images.length > 1 && (
           <>
@@ -66,7 +88,7 @@ export default function Gallery({ images, alt }: { images: Img[]; alt: string })
             <li key={img.thumb} className="shrink-0">
               <button
                 type="button"
-                onClick={() => setI(k)}
+                onClick={() => go(k)}
                 aria-label={`Slika ${k + 1}`}
                 aria-current={k === i}
                 className={cn(
