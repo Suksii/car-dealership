@@ -36,10 +36,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     // Google prijava: nađi ili napravi korisnika u našoj tabeli, pa upiši naš id u user objekat
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (account?.provider !== "google") return true;
       const email = user.email?.toLowerCase();
       if (!email) return false;
+      // Vezivanje za postojeći nalog po emailu samo ako je Google potvrdio email.
+      if (profile && profile.email_verified !== true) return false;
 
       let dbUser = await db.query.users.findFirst({ where: eq(users.email, email) });
       if (dbUser?.isBlocked) return false;

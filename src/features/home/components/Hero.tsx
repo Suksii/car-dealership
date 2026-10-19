@@ -1,4 +1,5 @@
 import Image from "next/image";
+import heroImg from "../../../../public/images/hero.jpg";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getCatalog } from "@/lib/catalog";
@@ -17,7 +18,7 @@ const QUICK = [
 async function Stats() {
   const s = await getSiteStats();
   return (
-    <p className="text-sm text-white/70">
+    <p className="text-sm text-white/90">
       <strong className="font-bold text-white">{s.listings}</strong>
       <span> {pluralSr(s.listings, ["vozilo", "vozila", "vozila"])} iz </span>
       <strong className="font-bold text-white">{s.dealers}</strong>
@@ -29,13 +30,13 @@ async function Stats() {
 }
 
 export default async function Hero() {
-  const { makes, models, cities } = await getCatalog();
-  const slimModels = models.map(({ id, makeId, name, slug }) => ({ id, makeId, name, slug }));
+  const { makes, cities } = await getCatalog();
   return (
     // Bez overflow-hidden: Select dropdown mora da izađe ispod sekcije; z-10 da bude iznad kartica (relative) niže na stranici.
     <section className="bg-foreground relative z-10 text-white">
       <Image
-        src="/images/hero.jpg"
+        src={heroImg}
+        placeholder="blur"
         alt=""
         fill
         priority
@@ -47,15 +48,15 @@ export default async function Hero() {
         <h1 className="text-hero leading-hero max-w-2xl font-extrabold tracking-tight md:text-6xl">
           Auto sa placa, bez obilaska placeva.
         </h1>
-        <p className="mt-4 max-w-lg text-base text-white/75 md:text-lg">
+        <p className="mt-4 max-w-lg text-base text-white/85 md:text-lg">
           Ponuda registrovanih autoplaceva iz cijele Crne Gore na jednom mjestu. Nađi model, uporedi cijene i pozovi
           plac direktno.
         </p>
         <div className="text-foreground mt-8">
-          <SearchBox makes={makes} models={slimModels} cities={cities} />
+          <SearchBox makes={makes} cities={cities} />
         </div>
         <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <ul className="flex flex-wrap items-center gap-x-1 gap-y-1.5 text-sm text-white/70">
+          <ul className="flex flex-wrap items-center gap-x-1 gap-y-1.5 text-sm text-white/90">
             <li className="mr-1">Često traženo:</li>
             {QUICK.map(([label, href]) => (
               <li key={href}>

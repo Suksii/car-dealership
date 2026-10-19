@@ -129,7 +129,11 @@ export default function DealerForm({ action, cities, dealer, logo, cover, submit
           />
         </div>
       </fieldset>
-      {state?.message && <p className="text-success text-sm">{state.message}</p>}
+      {state?.message && (
+        <p role="status" className="text-success text-sm">
+          {state.message}
+        </p>
+      )}
       <div>
         <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
       </div>

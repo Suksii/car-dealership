@@ -26,7 +26,9 @@ export interface ListingFilters {
   page?: number;
 }
 
-const publicListing = () => and(eq(listings.status, "active"), eq(dealers.status, "active"));
+/** Javno vidljiv: aktivan, plac aktivan i nije istekao (cron ga tek kasnije označi kao expired). */
+const publicListing = () =>
+  and(eq(listings.status, "active"), eq(dealers.status, "active"), sql`${listings.expiresAt} > now()`);
 
 function whereFor(f: ListingFilters): SQL[] {
   const w: SQL[] = [];
@@ -58,14 +60,15 @@ export async function getListings(
   f: ListingFilters,
 ): Promise<{ items: ListingCardItem[]; total: number; page: number; lastPage: number }> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife("hours"); // svaka izmjena zove updateTag(LISTINGS_TAG), pa kratak TTL nije potreban
   cacheTag(LISTINGS_TAG);
 
   const page = Math.max(1, f.page ?? 1);
   const where = and(publicListing(), ...whereFor(f));
 
+  // Jedan upit za stranu ID-jeva i ukupan broj (count(*) over()), umjesto dva.
   const idRows = await db
-    .select({ id: listings.id })
+    .select({ id: listings.id, total: sql<number>`count(*) over()::int` })
     .from(listings)
     .innerJoin(dealers, eq(dealers.id, listings.dealerId))
     .innerJoin(makes, eq(makes.id, listings.makeId))
@@ -76,14 +79,7 @@ export async function getListings(
     .limit(PAGE_SIZE)
     .offset((page - 1) * PAGE_SIZE);
 
-  const [{ total }] = await db
-    .select({ total: count() })
-    .from(listings)
-    .innerJoin(dealers, eq(dealers.id, listings.dealerId))
-    .innerJoin(makes, eq(makes.id, listings.makeId))
-    .innerJoin(models, eq(models.id, listings.modelId))
-    .innerJoin(cities, eq(cities.id, listings.cityId))
-    .where(where);
+  const total = idRows[0]?.total ?? 0;
 
   const ids = idRows.map((r) => r.id);
   const rows = ids.length
@@ -109,7 +105,7 @@ export async function getListings(
 
 export async function getLatestListings(limit = 8): Promise<ListingCardItem[]> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife("hours");
   cacheTag(LISTINGS_TAG);
   const { items } = await getListings({ sort: "newest" });
   return items.slice(0, limit);
@@ -146,10 +142,11 @@ export async function getBodyTypeStats(): Promise<BodyTypeStat[]> {
   const rows = await db.execute<{ body: BodyKey; count: number; key: string | null }>(sql`
     SELECT l.body_type AS body, count(*)::int AS count,
       (SELECT li.storage_key FROM listings l2 JOIN listing_images li ON li.listing_id = l2.id
-         WHERE l2.body_type = l.body_type AND l2.status = 'active'
-         ORDER BY li.sort_order, l2.published_at DESC LIMIT 1) AS key
+         JOIN dealers d2 ON d2.id = l2.dealer_id AND d2.status = 'active'
+         WHERE l2.body_type = l.body_type AND l2.status = 'active' AND l2.expires_at > now()
+         ORDER BY l2.published_at DESC, li.sort_order LIMIT 1) AS key
     FROM listings l JOIN dealers d ON d.id = l.dealer_id
-    WHERE l.status = 'active' AND d.status = 'active'
+    WHERE l.status = 'active' AND d.status = 'active' AND l.expires_at > now()
     GROUP BY l.body_type ORDER BY count DESC`);
   return rows.map((r) => ({ body: r.body, count: r.count, image: r.key ? imageUrl(r.key, "card") : null }));
 }

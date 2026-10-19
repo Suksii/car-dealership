@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath, updateTag } from "next/cache";
 import { LISTINGS_TAG } from "@/features/listings/api/getListings";
@@ -10,6 +10,8 @@ import { db } from "@/db";
 import { dealers, users, listings, listingImages, listingFeatures, makes, models } from "@/db/schema";
 import { requireSession, getMyDealer } from "@/lib/dal";
 import { slugify } from "@/lib/utils/slugify";
+import { deleteImage } from "@/lib/images";
+import { IMAGE_KEY } from "@/features/listings/lib/listing";
 import { hoursFromForm } from "@/features/dealers/lib/hours";
 import {
   fieldErrors,
@@ -23,37 +25,43 @@ import {
 export type FormState = { errors?: Record<string, string>; message?: string } | undefined;
 
 // ---------------- plac ----------------
-const dealerSchema = z.object({
-  name: z.string().trim().min(2, "Unesi naziv placa").max(80),
-  cityId: z.coerce.number().int().positive("Izaberi grad"),
-  address: z.string().trim().max(120).optional(),
-  phone: z.string().trim().min(6, "Unesi telefon").max(30),
-  phone2: z.string().trim().max(30).optional(),
-  viber: z.string().trim().max(30).optional(),
-  /** "1" kad je telefon ujedno i Viber broj (čekboks u formi). */
-  viberSame: z.string().optional(),
-  whatsapp: z.string().trim().max(30).optional(),
-  email: z.preprocess((v) => (v === "" ? undefined : v), z.email("Neispravan email").optional()),
-  website: z.string().trim().max(120).optional(),
-  description: z.string().trim().max(2000).optional(),
-  logo: z.string().optional(),
-  cover: z.string().optional(),
-  lat: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.number().min(-90).max(90).optional()),
-  lng: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.number().min(-180).max(180).optional()),
-  hours_mon: z.string().trim().max(30).optional(),
-  hours_tue: z.string().trim().max(30).optional(),
-  hours_wed: z.string().trim().max(30).optional(),
-  hours_thu: z.string().trim().max(30).optional(),
-  hours_fri: z.string().trim().max(30).optional(),
-  hours_sat: z.string().trim().max(30).optional(),
-  hours_sun: z.string().trim().max(30).optional(),
-});
+const dealerSchema = z
+  .object({
+    name: z.string().trim().min(2, "Unesi naziv placa").max(80),
+    cityId: z.coerce.number().int().positive("Izaberi grad"),
+    address: z.string().trim().max(120).optional(),
+    phone: z.string().trim().min(6, "Unesi telefon").max(30),
+    phone2: z.string().trim().max(30).optional(),
+    viber: z.string().trim().max(30).optional(),
+    /** "1" kad je telefon ujedno i Viber broj (čekboks u formi). */
+    viberSame: z.string().optional(),
+    whatsapp: z.string().trim().max(30).optional(),
+    email: z.preprocess((v) => (v === "" ? undefined : v), z.email("Neispravan email").optional()),
+    website: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() && !/^https?:\/\//i.test(v.trim()) ? `https://${v.trim()}` : v),
+      z.union([z.literal(""), z.url("Neispravan link").max(120)]).optional(),
+    ),
+    description: z.string().trim().max(2000).optional(),
+    logo: z.string().optional(),
+    cover: z.string().optional(),
+    lat: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.number().min(-90).max(90).optional()),
+    lng: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.number().min(-180).max(180).optional()),
+    hours_mon: z.string().trim().max(30).optional(),
+    hours_tue: z.string().trim().max(30).optional(),
+    hours_wed: z.string().trim().max(30).optional(),
+    hours_thu: z.string().trim().max(30).optional(),
+    hours_fri: z.string().trim().max(30).optional(),
+    hours_sat: z.string().trim().max(30).optional(),
+    hours_sun: z.string().trim().max(30).optional(),
+  })
+  .refine((d) => (d.lat === undefined) === (d.lng === undefined), { path: ["lng"], message: "Unesi obje koordinate" });
 
 /** Prvi ključ iz JSON liste ImageUploader-a; undefined = polje nije poslato (ne diraj), null = obrisano. */
 function imageKey(raw: string | undefined): string | null | undefined {
   if (raw === undefined) return undefined;
   try {
-    return JSON.parse(raw)[0]?.key ?? null;
+    const key = JSON.parse(raw)[0]?.key ?? null;
+    return key === null || IMAGE_KEY.safeParse(key).success ? key : undefined;
   } catch {
     return undefined;
   }
@@ -120,9 +128,18 @@ export async function updateDealer(_prev: FormState, fd: FormData): Promise<Form
   const parsed = dealerSchema.safeParse(Object.fromEntries(fd));
   if (!parsed.success) return { errors: fieldErrors(parsed.error) };
 
-  await db.update(dealers).set(dealerValues(parsed.data)).where(eq(dealers.id, dealer.id));
+  const values = dealerValues(parsed.data);
+  await db.update(dealers).set(values).where(eq(dealers.id, dealer.id));
+  // Zamijenjen logo/naslovna: stari fajlovi se brišu iz storage-a da ne ostaju siročići.
+  for (const [oldKey, newKey] of [
+    [dealer.logoKey, values.logoKey],
+    [dealer.coverKey, values.coverKey],
+  ] as const) {
+    if (oldKey && newKey !== undefined && newKey !== oldKey) await deleteImage(oldKey);
+  }
   revalidatePath("/plac");
   updateTag(DEALERS_TAG);
+  updateTag(LISTINGS_TAG); // ime/telefon/logo placa su u keširanim stranicama oglasa
   return { message: "Sačuvano" };
 }
 
@@ -174,6 +191,7 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
 
   const now = new Date();
   const expires = new Date(now.getTime() + LISTING_DAYS * 86400_000);
+  const removedKeys: string[] = [];
 
   const id = await db.transaction(async (tx) => {
     let id = listingId;
@@ -182,6 +200,7 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
         where: and(eq(listings.id, id), eq(listings.dealerId, dealer.id)),
       });
       if (!existing) throw new Error("Oglas nije pronađen");
+      if (existing.status === "removed") throw new Error("Oglas je uklonjen i ne može se mijenjati");
       const statusPatch =
         publish && existing.status !== "active"
           ? { status: "active" as const, publishedAt: now, expiresAt: expires, soldAt: null }
@@ -190,7 +209,11 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
         .update(listings)
         .set({ ...values, ...statusPatch })
         .where(eq(listings.id, id));
-      await tx.delete(listingImages).where(eq(listingImages.listingId, id));
+      const old = await tx
+        .delete(listingImages)
+        .where(eq(listingImages.listingId, id))
+        .returning({ key: listingImages.storageKey });
+      removedKeys.push(...old.map((o) => o.key).filter((k) => !d.images.some((img) => img.key === k)));
       await tx.delete(listingFeatures).where(eq(listingFeatures.listingId, id));
     } else {
       const [row] = await tx
@@ -222,15 +245,19 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
     return id!;
   });
 
+  for (const key of removedKeys) await deleteImage(key);
   revalidatePath("/plac");
   updateTag(LISTINGS_TAG);
   updateTag(DEALERS_TAG);
   redirect(`/plac?saved=${id}`);
 }
 
+const statusInput = z.object({ listingId: z.uuid(), status: z.enum(["active", "sold", "removed"]) });
+
 export async function setListingStatus(listingId: string, status: "active" | "sold" | "removed") {
   const dealer = await getMyDealer();
   if (!dealer) redirect("/plac/registracija");
+  const input = statusInput.parse({ listingId, status });
   const now = new Date();
   const patch =
     status === "active"
@@ -241,7 +268,10 @@ export async function setListingStatus(listingId: string, status: "active" | "so
   await db
     .update(listings)
     .set(patch)
-    .where(and(eq(listings.id, listingId), eq(listings.dealerId, dealer.id)));
+    // Oglas koji je admin uklonio plac ne može vratiti (status removed ostaje).
+    .where(
+      and(eq(listings.id, input.listingId), eq(listings.dealerId, dealer.id), sql`${listings.status} <> 'removed'`),
+    );
   revalidatePath("/plac");
   updateTag(LISTINGS_TAG);
   updateTag(DEALERS_TAG);

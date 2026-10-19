@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import sharp from "sharp";
 import { processAndStoreImage, deleteImage } from "../src/lib/images";
 import { CACHE_DIR, fetchPhoto } from "./lib/demo-photos";
+import { newPublicId } from "../src/features/listings/lib/listing";
 import photos from "../db/demo/photos.json" with { type: "json" };
 
 const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
@@ -154,10 +155,7 @@ for (const [di, d] of DEALERS.entries()) {
       console.warn("nema modela", c[0], c[1]);
       continue;
     }
-    const publicId = Math.random()
-      .toString(36)
-      .slice(2, 9)
-      .replace(/[lo01]/g, "x");
+    const publicId = newPublicId();
     const slug = `${c[0]}-${c[1]}-${c[2]}-${c[3]}`
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")

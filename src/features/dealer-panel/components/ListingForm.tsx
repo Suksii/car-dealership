@@ -226,7 +226,7 @@ export default function ListingForm({ action, catalog, listing, images = [], fea
             min={0}
             inputMode="numeric"
             defaultValue={listing?.priceEur || ""}
-            disabled={onRequest}
+            readOnly={onRequest}
             error={e.priceEur}
           />
           <SelectField

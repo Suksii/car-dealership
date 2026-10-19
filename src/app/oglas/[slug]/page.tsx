@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import ListingDetailPage, { publicIdFromSlug } from "@/features/listings/pages/ListingDetailPage";
 import { getListingByPublicId } from "@/features/listings/api/getListing";
 import { getRecentListingSlugs } from "@/features/listings/api/getListingSlugs";
 import { formatPrice } from "@/lib/utils/format";
+import { listingPath } from "@/features/listings/lib/listing";
 import Skeleton from "@/features/shared/components/ui/Skeleton";
 
 // Cijela ruta je statična po slugu (use cache podaci, bez cookies/searchParams). Nepoznat slug se
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/oglas/[slug]">): 
   return {
     title: `${l.title} ${l.year} – ${price}`,
     description: `${l.title}, ${l.year}. godište, ${l.mileageKm.toLocaleString("sr-Latn-ME")} km. ${l.dealer.name}, ${l.dealer.city.name}.`,
-    alternates: { canonical: `/oglas/${slug}` },
+    alternates: { canonical: listingPath(l.slug, l.publicId) },
     openGraph: { images: l.gallery[0] ? [l.gallery[0].full] : [] },
   };
 }
@@ -31,7 +32,11 @@ export async function generateMetadata({ params }: PageProps<"/oglas/[slug]">): 
 export default async function Page({ params }: PageProps<"/oglas/[slug]">) {
   // Provjera postojanja PRIJE Suspense granice, da 404 bude pravi 404 (ne 200). Isti keširani upit kao stranica.
   const { slug } = await params;
-  if (!(await getListingByPublicId(publicIdFromSlug(slug)))) notFound();
+  const l = await getListingByPublicId(publicIdFromSlug(slug));
+  if (!l) notFound();
+  // Stari ili izmišljen slug sa pravim ID-jem: trajni redirect na kanonsku adresu (nema duplih stranica).
+  const canonical = listingPath(l.slug, l.publicId);
+  if (canonical !== `/oglas/${slug}`) permanentRedirect(canonical);
   return (
     <Suspense
       fallback={

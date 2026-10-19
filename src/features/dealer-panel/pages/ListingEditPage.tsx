@@ -15,7 +15,7 @@ export default async function ListingEditPage({ params }: { params: Promise<{ id
     where: and(eq(listings.id, id), eq(listings.dealerId, dealer.id)),
     with: { images: { orderBy: (img, { asc }) => asc(img.sortOrder) }, features: true },
   });
-  if (!listing) notFound();
+  if (!listing || listing.status === "removed") notFound();
   const catalog = await getCatalog();
   const { images, features, ...row } = listing;
   return (

@@ -83,8 +83,8 @@ export default function UserMenu({ stacked = false }: { stacked?: boolean }) {
         <button
           type="button"
           aria-label="Korisnički meni"
-          aria-haspopup="menu"
           aria-expanded={open}
+          aria-controls="user-menu-panel"
           onClick={() => setOpen((o) => !o)}
           className={cn(
             "flex h-10 items-center gap-1.5 rounded-xl py-1 pr-2 pl-1 transition-colors hover:bg-neutral-100",
@@ -100,7 +100,7 @@ export default function UserMenu({ stacked = false }: { stacked?: boolean }) {
         </button>
         {open && (
           <div
-            role="menu"
+            id="user-menu-panel"
             className="bg-surface shadow-custom ring-border absolute right-0 mt-2 w-60 overflow-hidden rounded-xl p-1.5 ring-1"
           >
             <div className="px-3 py-2">
@@ -125,7 +125,6 @@ export default function UserMenu({ stacked = false }: { stacked?: boolean }) {
             <div className="border-border my-1 border-t" />
             <button
               type="button"
-              role="menuitem"
               onClick={logout}
               className="hover:text-foreground flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
             >
@@ -153,7 +152,6 @@ function MenuItem({ href, onClick, children }: { href: string; onClick: () => vo
   return (
     <Link
       href={href}
-      role="menuitem"
       onClick={onClick}
       className="hover:text-foreground flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
     >

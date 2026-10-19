@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "dealers_owner_uidx" ON "dealers" USING btree ("owner_user_id");

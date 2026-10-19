@@ -31,8 +31,8 @@ async function LatestListings() {
   if (items.length === 0) return <p className="text-muted">Još nema oglasa.</p>;
   return (
     <div className="grid-listings">
-      {items.map((item, i) => (
-        <ListingCard key={item.id} item={item} priority={i < 4} />
+      {items.map((item) => (
+        <ListingCard key={item.id} item={item} />
       ))}
     </div>
   );

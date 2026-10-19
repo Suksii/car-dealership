@@ -37,9 +37,9 @@ export default function ListingCard({ item, priority = false, className }: Props
         {item.isNew && (
           <span className="bg-foreground/90 absolute top-3 left-3 rounded-md px-2 py-0.5 text-xs font-bold text-white">
             Novo
-            <FavoriteButton listingId={item.id} className="absolute top-3 right-3" />
           </span>
         )}
+        <FavoriteButton listingId={item.id} className="absolute top-3 right-3" />
       </div>
 
       <div className="flex flex-1 flex-col p-4">

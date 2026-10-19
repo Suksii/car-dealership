@@ -16,6 +16,7 @@ import {
   primaryKey,
   unique,
   index,
+  uniqueIndex,
   check,
   customType,
 } from "drizzle-orm/pg-core";
@@ -160,7 +161,7 @@ export const dealers = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("dealers_city_status_idx").on(t.cityId, t.status)],
+  (t) => [index("dealers_city_status_idx").on(t.cityId, t.status), uniqueIndex("dealers_owner_uidx").on(t.ownerUserId)],
 );
 
 export const dealerMembers = pgTable(

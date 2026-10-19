@@ -17,13 +17,17 @@ export async function toggleFavorite(listingId: string): Promise<ToggleResult> {
   const parsed = z.uuid().safeParse(listingId);
   if (!parsed.success) return { ok: false, reason: "error" };
   const userId = session.user.id;
-  const existing = await db.query.favorites.findFirst({
-    where: and(eq(favorites.userId, userId), eq(favorites.listingId, parsed.data)),
-  });
-  if (existing) {
-    await db.delete(favorites).where(and(eq(favorites.userId, userId), eq(favorites.listingId, parsed.data)));
-    return { ok: true, favorited: false };
+  try {
+    const existing = await db.query.favorites.findFirst({
+      where: and(eq(favorites.userId, userId), eq(favorites.listingId, parsed.data)),
+    });
+    if (existing) {
+      await db.delete(favorites).where(and(eq(favorites.userId, userId), eq(favorites.listingId, parsed.data)));
+      return { ok: true, favorited: false };
+    }
+    await db.insert(favorites).values({ userId, listingId: parsed.data }).onConflictDoNothing();
+    return { ok: true, favorited: true };
+  } catch {
+    return { ok: false, reason: "error" }; // npr. nepostojeći oglas (FK)
   }
-  await db.insert(favorites).values({ userId, listingId: parsed.data }).onConflictDoNothing();
-  return { ok: true, favorited: true };
 }

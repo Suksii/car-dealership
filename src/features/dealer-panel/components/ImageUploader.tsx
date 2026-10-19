@@ -72,14 +72,14 @@ export default function ImageUploader({
         value={JSON.stringify(images.map(({ key, width, height }) => ({ key, width, height })))}
       />
 
-      <div
+      <label
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
           upload(e.dataTransfer.files);
         }}
-        onClick={() => inputRef.current?.click()}
-        className="border-border text-muted hover:border-foreground flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed bg-white p-8 text-center text-sm transition-colors"
+        aria-busy={uploading > 0}
+        className="border-border text-muted hover:border-foreground focus-within:border-foreground focus-within:ring-accent/30 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed bg-white p-8 text-center text-sm transition-colors focus-within:ring-2"
       >
         {uploading > 0 ? <Loader2 className="animate-spin" aria-hidden="true" /> : <ImagePlus aria-hidden="true" />}
         <span>{single ? "Klikni ili prevuci sliku" : `Klikni ili prevuci slike (do ${limit}, prva je naslovna)`}</span>
@@ -88,14 +88,19 @@ export default function ImageUploader({
           type="file"
           accept="image/*"
           multiple={!single}
-          className="hidden"
+          className="sr-only"
+          aria-label={single ? "Izaberi sliku" : "Izaberi slike"}
           onChange={(e) => {
             if (e.target.files) upload(e.target.files);
             e.target.value = "";
           }}
         />
-      </div>
-      {error && <p className="text-danger text-xs">{error}</p>}
+      </label>
+      {error && (
+        <p role="alert" className="text-danger text-xs">
+          {error}
+        </p>
+      )}
 
       {images.length > 0 && (
         <ul className={cn("grid gap-2", single ? "max-w-48 grid-cols-1" : "grid-cols-3 sm:grid-cols-4 md:grid-cols-5")}>
@@ -105,7 +110,7 @@ export default function ImageUploader({
               className="group border-border relative aspect-[4/3] overflow-hidden rounded-xl border bg-neutral-100"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt="" className="h-full w-full object-cover" />
+              <img src={img.url} alt={`Slika ${i + 1}`} className="h-full w-full object-cover" />
               {i === 0 && !single && (
                 <span className="bg-foreground absolute top-1.5 left-1.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-white">
                   Naslovna
@@ -118,7 +123,7 @@ export default function ImageUploader({
                     onClick={() => move(i, -1)}
                     className="text-white disabled:opacity-30"
                     disabled={i === 0}
-                    aria-label="Pomjeri lijevo"
+                    aria-label={`Pomjeri sliku ${i + 1} lijevo`}
                   >
                     <ArrowLeft size={16} />
                   </button>
@@ -127,7 +132,7 @@ export default function ImageUploader({
                   type="button"
                   onClick={() => setImages((p) => p.filter((_, k) => k !== i))}
                   className="text-white"
-                  aria-label="Ukloni sliku"
+                  aria-label={`Ukloni sliku ${i + 1}`}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -137,7 +142,7 @@ export default function ImageUploader({
                     onClick={() => move(i, 1)}
                     className="text-white disabled:opacity-30"
                     disabled={i === images.length - 1}
-                    aria-label="Pomjeri desno"
+                    aria-label={`Pomjeri sliku ${i + 1} desno`}
                   >
                     <ArrowRight size={16} />
                   </button>

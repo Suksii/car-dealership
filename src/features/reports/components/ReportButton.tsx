@@ -23,7 +23,7 @@ export default function ReportButton({ listingId }: { listingId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-muted hover:text-foreground inline-flex items-center gap-1.5 text-xs"
+        className="text-muted hover:text-foreground inline-flex min-h-6 items-center gap-1.5 text-xs"
       >
         <Flag size={13} aria-hidden="true" />
         <span>Prijavi oglas</span>
@@ -33,7 +33,9 @@ export default function ReportButton({ listingId }: { listingId: string }) {
           <h2 className="text-lg font-bold tracking-tight">Prijavi oglas</h2>
           {state?.done ? (
             <div className="mt-4 flex flex-col gap-4">
-              <p className="text-sm text-neutral-700">{state.message}</p>
+              <p role="status" className="text-sm text-neutral-700">
+                {state.message}
+              </p>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Zatvori
               </Button>
@@ -55,7 +57,11 @@ export default function ReportButton({ listingId }: { listingId: string }) {
                 hint="Nije obavezno. Ne upisuj lične podatke."
                 error={state?.errors?.message}
               />
-              {state?.message && <p className="text-danger text-sm">{state.message}</p>}
+              {state?.message && (
+                <p role="alert" className="text-danger text-sm">
+                  {state.message}
+                </p>
+              )}
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
                   Odustani

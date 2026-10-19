@@ -3,6 +3,8 @@
 import { z } from "zod";
 import { and, eq, gte, count } from "drizzle-orm";
 import { connection } from "next/server";
+import { headers } from "next/headers";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { listings, reports } from "@/db/schema";
@@ -17,7 +19,7 @@ const schema = z.object({
   message: z.string().trim().max(500, "Najviše 500 znakova").optional(),
 });
 
-/** Prijava oglasa; prijava ne traži nalog. Ograničenje: najviše 20 otvorenih prijava po oglasu u zadnjih 24h. */
+/** Prijava oglasa; ne traži nalog. Limiti: 3 prijave po IP-u dnevno, 20 otvorenih po oglasu u 24h. Samo aktivni oglasi. */
 export async function reportListing(listingId: string, _prev: ReportState, fd: FormData): Promise<ReportState> {
   await connection();
   const parsedId = z.uuid().safeParse(listingId);
@@ -26,14 +28,20 @@ export async function reportListing(listingId: string, _prev: ReportState, fd: F
   if (!parsed.success)
     return { errors: Object.fromEntries(parsed.error.issues.map((i) => [String(i.path[0]), i.message])) };
 
-  const listing = await db.query.listings.findFirst({ where: eq(listings.id, parsedId.data), columns: { id: true } });
-  if (!listing) return { message: "Oglas nije pronađen." };
+  const listing = await db.query.listings.findFirst({
+    where: eq(listings.id, parsedId.data),
+    columns: { id: true, status: true },
+  });
+  if (!listing || listing.status !== "active") return { message: "Oglas nije pronađen." };
+
+  const ip = clientIp(await headers());
+  if (!rateLimit(`report:${ip}`, 3, 86400_000).ok) return { done: true, message: "Hvala, prijava je već zabilježena." };
 
   const since = new Date(Date.now() - 86400_000);
   const [{ n }] = await db
     .select({ n: count() })
     .from(reports)
-    .where(and(eq(reports.listingId, listing.id), gte(reports.createdAt, since)));
+    .where(and(eq(reports.listingId, listing.id), eq(reports.status, "open"), gte(reports.createdAt, since)));
   if (n >= 20) return { done: true, message: "Hvala, prijava je već zabilježena." };
 
   const session = await auth();

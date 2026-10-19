@@ -4,14 +4,20 @@ import { redirect } from "next/navigation";
 import { eq, or } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { dealers, dealerMembers } from "@/db/schema";
+import { dealers, dealerMembers, users } from "@/db/schema";
 
 /** Sesija ili redirect na prijavu. connection() je obavezan prije auth() zbog cacheComponents. */
 export const requireSession = cache(async (next = "/nalog") => {
   await connection();
   const session = await auth();
   if (!session) redirect(`/prijava?next=${encodeURIComponent(next)}`);
-  return session;
+  // Uloga i blokada se čitaju iz baze (JWT traje 30 dana): promjena uloge ili blokada važe odmah.
+  const fresh = await db.query.users.findFirst({
+    where: eq(users.id, session.user.id),
+    columns: { role: true, isBlocked: true },
+  });
+  if (!fresh || fresh.isBlocked) redirect("/prijava?blokiran=1");
+  return { ...session, user: { ...session.user, role: fresh.role } };
 });
 
 /** Plac prijavljenog korisnika (vlasnik ili član), ili null. */

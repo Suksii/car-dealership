@@ -14,7 +14,11 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams; // pod Suspense (docs/RENDERING.md, pravilo 1)
   const filters = parseFilters(sp);
   const [{ makes, models, cities }, result] = await Promise.all([getCatalog(), getListings(filters)]);
-  const slimModels = models.map(({ id, makeId, name, slug }) => ({ id, makeId, name, slug }));
+  const makeIdSel = makes.find((mk) => mk.slug === filters.make)?.id;
+  // Samo modeli izabrane marke idu u HTML; ostale klijent traži kroz loadModels.
+  const slimModels = models
+    .filter((m) => m.makeId === makeIdSel)
+    .map(({ id, makeId, name, slug }) => ({ id, makeId, name, slug }));
   const activeCount = countActiveFilters(filters);
   const makeName = makes.find((m) => m.slug === filters.make)?.name;
   const modelName = models.find(
@@ -39,6 +43,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <div>
           <ListingFilters
+            key={JSON.stringify(filters)}
             filters={filters}
             makes={makes}
             models={slimModels}

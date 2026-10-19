@@ -30,12 +30,22 @@ export function FieldWrap({
       </label>
       {children}
       {error ? (
-        <p className="text-danger text-xs">{error}</p>
+        <p id={htmlFor ? `${htmlFor}-error` : undefined} role="alert" className="text-danger text-xs">
+          {error}
+        </p>
       ) : hint ? (
-        <p className="text-muted text-xs">{hint}</p>
+        <p id={htmlFor ? `${htmlFor}-hint` : undefined} className="text-muted text-xs">
+          {hint}
+        </p>
       ) : null}
     </div>
   );
+}
+
+/** id poruke o grešci ili hinta, da čitač ekrana pročita tekst ispod polja. */
+export function describedBy(id: string | undefined, error?: string, hint?: string) {
+  if (!id) return undefined;
+  return error ? `${id}-error` : hint ? `${id}-hint` : undefined;
 }
 
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; hint?: string };
@@ -48,6 +58,7 @@ export function Field({ label, error, hint, className, ...props }: FieldProps) {
         id={id}
         {...props}
         aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(id, error, hint)}
         className={cn("field-control", error && "field-control-error")}
       />
     </FieldWrap>
@@ -64,6 +75,7 @@ export function TextareaField({ label, error, hint, className, ...props }: Texta
         id={id}
         {...props}
         aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(id, error, hint)}
         className={cn("field-control min-h-32 py-3", error && "field-control-error")}
       />
     </FieldWrap>

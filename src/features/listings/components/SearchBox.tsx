@@ -1,35 +1,42 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import Select from "@/features/shared/components/ui/Select";
 import Button from "@/features/shared/components/ui/Button";
+import { loadModels } from "@/features/listings/catalog-actions";
+import type { SlimModel } from "@/features/listings/api/getModels";
 import type { Catalog } from "@/lib/catalog";
 
 const PRICE_STEPS = [3000, 5000, 8000, 10000, 15000, 20000, 30000, 50000];
 
-type Props = {
-  makes: Catalog["makes"];
-  models: Pick<Catalog["models"][number], "id" | "makeId" | "name" | "slug">[];
-  cities: Catalog["cities"];
-};
+type Props = { makes: Catalog["makes"]; cities: Catalog["cities"] };
 
-export default function SearchBox({ makes, models, cities }: Props) {
+export default function SearchBox({ makes, cities }: Props) {
   const router = useRouter();
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [price, setPrice] = useState("");
   const [city, setCity] = useState("");
+  const [models, setModels] = useState<SlimModel[]>([]);
 
   const makeOpts = useMemo(() => makes.map((m) => ({ value: m.slug, label: m.name })), [makes]);
   const makeId = makes.find((m) => m.slug === make)?.id;
-  const modelOpts = useMemo(
-    () => models.filter((m) => m.makeId === makeId).map((m) => ({ value: m.slug, label: m.name })),
-    [models, makeId],
-  );
+  const modelOpts = useMemo(() => models.map((m) => ({ value: m.slug, label: m.name })), [models]);
   const cityOpts = useMemo(() => cities.map((c) => ({ value: c.slug, label: c.name })), [cities]);
   const priceOpts = PRICE_STEPS.map((p) => ({ value: String(p), label: `do ${p.toLocaleString("sr-Latn-ME")} €` }));
+
+  useEffect(() => {
+    if (!makeId) return;
+    let cancelled = false;
+    loadModels(makeId).then((m) => {
+      if (!cancelled) setModels(m);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [makeId]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,20 +51,24 @@ export default function SearchBox({ makes, models, cities }: Props) {
   return (
     <form
       onSubmit={submit}
+      aria-label="Pretraga vozila"
       className="bg-surface shadow-custom grid gap-2.5 rounded-2xl p-3 md:grid-cols-[1.1fr_1.1fr_1fr_1fr_auto] md:gap-3 md:p-3.5"
     >
       <Select
+        aria-label="Marka"
         options={makeOpts}
         value={make}
         onChange={(v) => {
           setMake(v);
           setModel("");
+          setModels([]);
         }}
         placeholder="Marka"
         searchable
         clearable
       />
       <Select
+        aria-label="Model"
         options={modelOpts}
         value={model}
         onChange={setModel}
@@ -66,8 +77,23 @@ export default function SearchBox({ makes, models, cities }: Props) {
         clearable
         disabled={!make}
       />
-      <Select options={priceOpts} value={price} onChange={setPrice} placeholder="Cijena do" clearable />
-      <Select options={cityOpts} value={city} onChange={setCity} placeholder="Grad" searchable clearable />
+      <Select
+        aria-label="Cijena do"
+        options={priceOpts}
+        value={price}
+        onChange={setPrice}
+        placeholder="Cijena do"
+        clearable
+      />
+      <Select
+        aria-label="Grad"
+        options={cityOpts}
+        value={city}
+        onChange={setCity}
+        placeholder="Grad"
+        searchable
+        clearable
+      />
       <Button type="submit" size="lg" className="h-12 md:px-6">
         <Search size={18} aria-hidden="true" /> Pretraži
       </Button>

@@ -21,7 +21,7 @@ const valid = {
   bodyType: "hatchback",
   priceEur: "11900",
   cityId: "1",
-  images: JSON.stringify([{ key: "listings/2026/abc", width: 1600, height: 1200 }]),
+  images: JSON.stringify([{ key: "listings/2026/AbC123_-xyz9", width: 1600, height: 1200 }]),
   features: ["16", "17"],
 };
 
@@ -32,7 +32,7 @@ describe("listingSchema", () => {
     if (r.success) {
       expect(r.data.year).toBe(2016);
       expect(r.data.features).toEqual([16, 17]);
-      expect(r.data.images[0].key).toBe("listings/2026/abc");
+      expect(r.data.images[0].key).toBe("listings/2026/AbC123_-xyz9");
       expect(r.data.customsCleared).toBe(false); // nečekiran checkbox ne šalje polje
     }
   });
@@ -65,5 +65,19 @@ describe("slug i putanja", () => {
     expect(id).toHaveLength(7);
     expect(id).toMatch(/^[a-z0-9]+$/);
     expect(id).not.toMatch(/[lo01]/);
+  });
+});
+
+describe("listingSchema – dodatna pravila", () => {
+  it("odbija ključ slike koji nije naš format", () => {
+    const r = listingSchema.safeParse(
+      listingFormToObject(fd({ ...valid, images: JSON.stringify([{ key: "../etc/passwd" }]) })),
+    );
+    expect(r.success).toBe(false);
+  });
+  it("'na upit' bez cijene (polje readOnly može biti prazno) prolazi sa cijenom 0", () => {
+    const r = listingSchema.safeParse(listingFormToObject(fd({ ...valid, priceEur: "", priceOnRequest: "on" })));
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.priceEur).toBe(0);
   });
 });

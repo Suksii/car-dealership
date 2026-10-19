@@ -89,3 +89,29 @@ produkciji cron jednom dnevno.
 - Stranica oglasa ima JSON-LD `Car` + `Offer` + `AutoDealer`
   (`ListingDetailPage`). `canonical` na naslovnoj, listi, oglasu i placu.
 - Privatne stranice (`/admin`, `/nalog/*`) imaju `robots: { index: false }`.
+
+## Bezbjednost
+
+- Uloga i blokada se čitaju iz baze u `requireSession()` (JWT traje 30 dana,
+  pa promjena uloge ili blokada važi odmah). `requireAdmin()` koristi tu ulogu.
+- Rate limiting (`src/lib/rate-limit.ts`, u memoriji procesa): u `proxy.ts`
+  za POST na `/prijava`, `/registracija`, `/api/upload`; u akcijama za
+  `trackView`, `trackContactClick` i prijave oglasa. Za više instanci
+  zamijeniti Postgres/Redis implementacijom sa istim API-jem.
+- Zaglavlja u `next.config.ts` (`nosniff`, `SAMEORIGIN`, referrer, permissions,
+  HSTS u produkciji). CSP nema: Next inline skripte traže nonce po zahtjevu,
+  što ruši statične stranice.
+- Ključ slike iz forme mora biti našeg formata (`IMAGE_KEY`), zamijenjene slike
+  se brišu iz storage-a (`deleteImage`) u `saveListing` i `updateDealer`.
+- Oglas koji je admin uklonio (`removed`) plac ne može vratiti ni izmijeniti.
+- `safeNextPath` (`features/auth/lib`) štiti od open redirecta posle prijave.
+- Produkcija bez `R2_*` odbija upload (`ALLOW_LOCAL_STORAGE=1` samo lokalno).
+
+## Cron (produkcija)
+
+| Skripta                       | Kada         | Šta                                                         |
+| ----------------------------- | ------------ | ----------------------------------------------------------- |
+| `scripts/expire-listings.mts` | dnevno 03:00 | aktivne oglase sa `expires_at < now()` označi kao `expired` |
+| `scripts/refresh-stats.mts`   | dnevno 04:00 | `REFRESH MATERIALIZED VIEW price_stats`                     |
+
+Javne liste i bez crona ne prikazuju istekle oglase (`expires_at > now()` u upitu).

@@ -1,16 +1,22 @@
 "use server";
 
+import { z } from "zod";
 import { eq, sql } from "drizzle-orm";
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { contactClicks, listings } from "@/db/schema";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const CONTACT = ["phone", "viber", "whatsapp", "email"] as const;
 type ContactType = (typeof CONTACT)[number];
+const uuid = z.uuid();
 
-/** Statistika za plac: klik na telefon/Viber/WhatsApp. Ne baca ka klijentu. */
+/** Statistika za plac: klik na telefon/Viber/WhatsApp. Najviše 5 po IP-u i oglasu na sat. Ne baca ka klijentu. */
 export async function trackContactClick(listingId: string, type: ContactType) {
-  if (!CONTACT.includes(type)) return;
+  if (!CONTACT.includes(type) || !uuid.safeParse(listingId).success) return;
   try {
+    const ip = clientIp(await headers());
+    if (!rateLimit(`contact:${ip}:${listingId}`, 5, 3600_000).ok) return;
     const l = await db.query.listings.findFirst({ where: eq(listings.id, listingId), columns: { dealerId: true } });
     if (!l) return;
     await db.insert(contactClicks).values({ listingId, dealerId: l.dealerId, type });
@@ -19,9 +25,12 @@ export async function trackContactClick(listingId: string, type: ContactType) {
   }
 }
 
-/** Brojač pregleda; poziva se jednom po učitavanju stranice oglasa. */
+/** Brojač pregleda: jednom po IP-u i oglasu na sat. */
 export async function trackView(listingId: string) {
+  if (!uuid.safeParse(listingId).success) return;
   try {
+    const ip = clientIp(await headers());
+    if (!rateLimit(`view:${ip}:${listingId}`, 1, 3600_000).ok) return;
     await db
       .update(listings)
       .set({ viewsCount: sql`${listings.viewsCount} + 1` })

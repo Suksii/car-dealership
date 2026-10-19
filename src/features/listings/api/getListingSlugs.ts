@@ -11,7 +11,7 @@ export async function getRecentListingSlugs(limit = 50): Promise<string[]> {
     .select({ slug: listings.slug, publicId: listings.publicId })
     .from(listings)
     .innerJoin(dealers, eq(dealers.id, listings.dealerId))
-    .where(eq(listings.status, "active"))
+    .where(and(eq(listings.status, "active"), eq(dealers.status, "active")))
     .orderBy(desc(listings.publishedAt))
     .limit(limit);
   return rows.map((r) => `${r.slug}-${r.publicId}`);

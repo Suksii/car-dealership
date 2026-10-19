@@ -131,14 +131,14 @@ export default async function DealerDetailPage({
 
       <div className="mt-10 mb-5 flex items-center justify-between gap-3">
         <h2 className="text-xl font-bold tracking-tight">Ponuda</h2>
-        <SortSelect filters={filters} />
+        <SortSelect filters={{ ...filters, dealer: undefined }} basePath={`/placevi/${slug}`} />
       </div>
       {result.items.length === 0 ? (
         <p className="text-muted">Ovaj plac trenutno nema aktivnih oglasa.</p>
       ) : (
         <div className="grid-listings">
-          {result.items.map((item, i) => (
-            <ListingCard key={item.id} item={item} priority={i < 4} />
+          {result.items.map((item) => (
+            <ListingCard key={item.id} item={item} />
           ))}
         </div>
       )}

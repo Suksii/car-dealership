@@ -9,7 +9,7 @@ import { listingTitle } from "@/features/listings/lib/listing";
 /** Oglas po publicId (zadnji dio URL-a). Vraća null umjesto da baca (use cache). */
 export async function getListingByPublicId(publicId: string) {
   "use cache";
-  cacheLife("minutes");
+  cacheLife("hours"); // updateTag(LISTINGS_TAG) na svaku izmjenu
   cacheTag(LISTINGS_TAG, `listing:${publicId}`);
 
   const row = await db.query.listings.findFirst({

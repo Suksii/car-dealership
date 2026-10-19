@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { safeNextPath } from "@/features/auth/lib/safeNext";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { AuthError } from "next-auth";
@@ -20,10 +21,7 @@ function fieldErrors(error: z.ZodError): Record<string, string> {
   return out;
 }
 
-function safeNext(value: unknown): string {
-  const s = typeof value === "string" ? value : "";
-  return s.startsWith("/") && !s.startsWith("//") ? s : "/nalog";
-}
+const safeNext = safeNextPath;
 
 const registerSchema = z
   .object({

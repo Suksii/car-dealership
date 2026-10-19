@@ -16,6 +16,9 @@ const bool = z.preprocess((v) => v === "on" || v === "true" || v === true, z.boo
 const keys = <T extends Record<string, string>>(o: T) =>
   z.enum(Object.keys(o) as [keyof T & string, ...(keyof T & string)[]]);
 
+/** Ključ slike kakav pravi processAndStoreImage: folder/godina/nanoid(12). Štiti od tuđih/izmišljenih ključeva. */
+export const IMAGE_KEY = z.string().regex(/^(listings|dealers)\/\d{4}\/[A-Za-z0-9_-]{12}$/, "Neispravna slika");
+
 export const listingSchema = z
   .object({
     makeId: z.coerce.number().int().positive("Izaberi marku"),
@@ -42,16 +45,14 @@ export const listingSchema = z
     customsCleared: bool,
     isDamaged: bool,
     firstOwner: bool,
-    priceEur: z.coerce.number().int().min(0).max(5_000_000),
+    priceEur: z.preprocess(emptyToUndef, z.coerce.number().int().min(0).max(5_000_000).optional()).default(0),
     priceNegotiable: bool,
     priceOnRequest: bool,
     description: z.string().trim().max(5000).optional(),
     cityId: z.coerce.number().int().positive("Izaberi grad"),
     features: z.array(z.coerce.number().int()).default([]),
     images: z
-      .array(
-        z.object({ key: z.string().min(1), width: z.number().int().optional(), height: z.number().int().optional() }),
-      )
+      .array(z.object({ key: IMAGE_KEY, width: z.number().int().optional(), height: z.number().int().optional() }))
       .max(MAX_IMAGES, `Najviše ${MAX_IMAGES} slika`),
   })
   .refine((d) => d.priceOnRequest || d.priceEur > 0, {

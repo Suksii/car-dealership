@@ -56,4 +56,25 @@ function r2Storage(): Storage {
 
 export const LOCAL_UPLOAD_DIR = join(process.cwd(), "storage", "uploads");
 
-export const storage: Storage = process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID ? r2Storage() : localStorage;
+const hasR2 = !!(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID);
+
+/** U produkciji bez R2 upload ne smije tiho da ide na lokalni disk; provjera je pri prvom uploadu (ne pri buildu). */
+function guardedLocal(): Storage {
+  const guard = () => {
+    if (process.env.NODE_ENV === "production" && process.env.ALLOW_LOCAL_STORAGE !== "1") {
+      throw new Error("Produkcija bez R2_* varijabli: postavi R2_* ili ALLOW_LOCAL_STORAGE=1 za lokalni disk.");
+    }
+  };
+  return {
+    put: (key, body, type) => {
+      guard();
+      return localStorage.put(key, body, type);
+    },
+    remove: (key) => {
+      guard();
+      return localStorage.remove(key);
+    },
+    publicUrl: (key) => localStorage.publicUrl(key),
+  };
+}
+export const storage: Storage = hasR2 ? r2Storage() : guardedLocal();

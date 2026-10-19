@@ -36,10 +36,14 @@ export default async function AdminListingsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-2">
-                  <Link
-                    href={listingPath(l.slug, l.publicId)}
-                    className="hover:text-accent font-bold"
-                  >{`${l.title} ${l.year}`}</Link>
+                  {l.status === "active" ? (
+                    <Link
+                      href={listingPath(l.slug, l.publicId)}
+                      className="hover:text-accent font-bold"
+                    >{`${l.title} ${l.year}`}</Link>
+                  ) : (
+                    <span className="font-bold">{`${l.title} ${l.year}`}</span>
+                  )}
                   <Badge variant={STATUS_VARIANT[l.status]}>{LISTING_STATUS[l.status]}</Badge>
                   {l.dealer?.status !== "active" && <Badge variant="warning">Plac nije aktivan</Badge>}
                 </p>

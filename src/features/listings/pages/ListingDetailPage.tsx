@@ -19,6 +19,7 @@ import Badge from "@/features/shared/components/ui/Badge";
 import Button from "@/features/shared/components/ui/Button";
 import { formatDate, formatKm, formatPrice, kwToHp } from "@/lib/utils/format";
 import { SITE } from "@/config/site";
+import { listingPath } from "@/features/listings/lib/listing";
 import FavoriteButton from "@/features/favorites/components/FavoriteButton";
 import ReportButton from "@/features/reports/components/ReportButton";
 import PriceEstimate from "@/features/listings/components/PriceEstimate";
@@ -68,7 +69,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     bodyType: BODY[l.bodyType],
     color: l.color ?? undefined,
     image: l.gallery.map((g) => g.full),
-    url: `${SITE.url}/oglas/${slug}`,
+    url: `${SITE.url}${listingPath(l.slug, l.publicId)}`,
     offers: {
       "@type": "Offer",
       price: l.priceOnRequest ? undefined : l.priceEur,

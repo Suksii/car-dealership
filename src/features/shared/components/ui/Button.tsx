@@ -23,6 +23,8 @@ const SIZES: Record<ButtonSize, string> = {
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  target?: string;
+  rel?: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
   fullWidth?: boolean;
@@ -54,12 +56,23 @@ export default function Button({
     fullWidth && "w-full",
     className,
   );
-  if (href)
+  if (href) {
+    // Link dobija samo atribute koji imaju smisla na <a> (onClick za statistiku, target/rel za spoljne linkove).
+    const { onClick, target, rel, title, "aria-label": ariaLabel } = props;
     return (
-      <Link href={href} className={base}>
+      <Link
+        href={href}
+        className={base}
+        onClick={onClick as React.MouseEventHandler<HTMLAnchorElement> | undefined}
+        target={target}
+        rel={rel}
+        title={title}
+        aria-label={ariaLabel}
+      >
         {children}
       </Link>
     );
+  }
   return (
     <button className={base} {...props}>
       {children}

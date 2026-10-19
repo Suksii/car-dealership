@@ -39,7 +39,7 @@ export default function Gallery({ images, alt }: { images: Img[]; alt: string })
               type="button"
               onClick={prev}
               aria-label="Prethodna slika"
-              className="absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-opacity hover:bg-white md:opacity-0 md:group-hover:opacity-100"
+              className="absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-opacity hover:bg-white md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
             >
               <ChevronLeft size={20} aria-hidden="true" />
             </button>
@@ -47,11 +47,14 @@ export default function Gallery({ images, alt }: { images: Img[]; alt: string })
               type="button"
               onClick={next}
               aria-label="Sljedeća slika"
-              className="absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-opacity hover:bg-white md:opacity-0 md:group-hover:opacity-100"
+              className="absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-opacity hover:bg-white md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
             >
               <ChevronRight size={20} aria-hidden="true" />
             </button>
-            <span className="absolute right-3 bottom-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
+            <span
+              aria-live="polite"
+              className="absolute right-3 bottom-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white"
+            >
               {i + 1} / {images.length}
             </span>
           </>

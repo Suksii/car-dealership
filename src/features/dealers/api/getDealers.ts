@@ -21,7 +21,7 @@ export interface DealerCardItem {
 
 export async function getDealers(): Promise<DealerCardItem[]> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife("hours");
   cacheTag(DEALERS_TAG);
   const rows = await db.query.dealers.findMany({
     where: eq(dealers.status, "active"),
@@ -56,7 +56,7 @@ export async function getDealers(): Promise<DealerCardItem[]> {
 
 export async function getDealerBySlug(slug: string) {
   "use cache";
-  cacheLife("minutes");
+  cacheLife("hours");
   cacheTag(DEALERS_TAG, `dealer:${slug}`);
   const d = await db.query.dealers.findFirst({ where: eq(dealers.slug, slug), with: { city: true } });
   if (!d || d.status !== "active") return null;

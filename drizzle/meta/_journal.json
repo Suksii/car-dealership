@@ -15,6 +15,13 @@
       "when": 1792357132888,
       "tag": "0001_triggers_and_views",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792412494405,
+      "tag": "0002_dealers_owner_unique",
+      "breakpoints": true
     }
   ]
 }

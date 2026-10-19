@@ -23,9 +23,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="sr-Latn-ME" className={`${manrope.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        <a
+          href="#sadrzaj"
+          className="focus:bg-foreground sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-100 focus:rounded-lg focus:px-4 focus:py-2 focus:text-white"
+        >
+          Preskoči na sadržaj
+        </a>
         <Providers>
           <Header />
-          <main className="flex flex-1 flex-col">{children}</main>
+          <main id="sadrzaj" className="flex flex-1 flex-col">
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>

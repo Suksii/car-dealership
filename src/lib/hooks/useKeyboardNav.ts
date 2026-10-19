@@ -17,7 +17,12 @@ export function useKeyboardNav(
   useEffect(() => {
     if (!enabled) return;
     const el = (target?.current ?? window) as EventTarget;
-    const onKey = (e: KeyboardEvent) => keyMapRef.current[e.key]?.();
+    const onKey = (e: KeyboardEvent) => {
+      // Strelice u polju za unos (pretraga u Selectu, textarea u modalu) ne smiju da listaju galeriju.
+      const t = e.target as HTMLElement | null;
+      if (!target && t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      keyMapRef.current[e.key]?.();
+    };
     el.addEventListener("keydown", onKey as EventListener);
     return () => el.removeEventListener("keydown", onKey as EventListener);
   }, [enabled, target]);

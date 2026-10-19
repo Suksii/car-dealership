@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FieldWrap } from "./Field";
+import { FieldWrap, describedBy } from "./Field";
 import Select, { type SelectOption } from "./Select";
 
 interface SelectFieldProps {
@@ -51,6 +51,7 @@ export default function SelectField({
         onChange={handle}
         required={required}
         invalid={!!error}
+        aria-describedby={describedBy(name, error, hint)}
         {...rest}
       />
     </FieldWrap>
