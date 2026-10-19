@@ -7,4 +7,8 @@ export const SITE = {
   description: "Pregledaj ponudu svih autoplaceva u Crnoj Gori na jednom mjestu, ili izaberi plac u svom gradu.",
   email: "info@autoplac.me",
   locale: "sr-Latn-ME",
+  /** Ko stoji iza sajta (impresum, uslovi, privatnost). Ažurirati kad se registruje firma. */
+  operator: { name: "Šućo Ramović", city: "Podgorica", country: "Crna Gora" },
+  /** Datum važeće verzije uslova i politike privatnosti; promjena datuma = nova verzija. */
+  legalUpdatedAt: "2026-10-19",
 } as const;

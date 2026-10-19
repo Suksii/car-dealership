@@ -53,6 +53,8 @@ const dealerSchema = z
     hours_fri: z.string().trim().max(30).optional(),
     hours_sat: z.string().trim().max(30).optional(),
     hours_sun: z.string().trim().max(30).optional(),
+    /** Samo pri registraciji placa (createDealer traži "on"). */
+    terms: z.string().optional(),
   })
   .refine((d) => (d.lat === undefined) === (d.lng === undefined), { path: ["lng"], message: "Unesi obje koordinate" });
 
@@ -105,10 +107,13 @@ export async function createDealer(_prev: FormState, fd: FormData): Promise<Form
   if (await getMyDealer()) redirect("/plac");
 
   const parsed = dealerSchema.safeParse(Object.fromEntries(fd));
+  if (parsed.success && parsed.data.terms !== "on")
+    return { errors: { terms: "Moraš prihvatiti uslove za autoplaceve" } };
   if (!parsed.success) return { errors: fieldErrors(parsed.error) };
 
   await db.transaction(async (tx) => {
     await tx.insert(dealers).values({
+      termsAcceptedAt: new Date(),
       ...dealerValues(parsed.data),
       ownerUserId: session.user.id,
       slug: await uniqueDealerSlug(parsed.data.name),

@@ -22,12 +22,20 @@ const COLS = [
       ["/prijava", "Prijava"],
     ],
   },
+  {
+    title: "Sajt",
+    links: [
+      ["/uslovi", "Uslovi korišćenja"],
+      ["/privatnost", "Privatnost"],
+      [`mailto:${SITE.email}`, "Kontakt"],
+    ],
+  },
 ] as const;
 
 export default function Footer() {
   return (
     <footer className="border-border bg-surface mt-20 border-t">
-      <div className="container-page grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
+      <div className="container-page grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-3">
           <Logo />
           <p className="text-muted max-w-sm text-sm">{SITE.description}</p>
@@ -54,7 +62,7 @@ export default function Footer() {
         <span>
           © {YEAR} {SITE.name}. Sva prava zadržana.
         </span>
-        <span>Napravljeno u Podgorici.</span>
+        <span>{`${SITE.operator.name}, ${SITE.operator.city}. Napravljeno u Podgorici.`}</span>
       </div>
     </footer>
   );

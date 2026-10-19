@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Field, TextareaField, SubmitButton, FieldWrap } from "@/features/shared/components/ui/Field";
 import Checkbox from "@/features/shared/components/ui/Checkbox";
+import TermsCheckbox from "@/features/legal/components/TermsCheckbox";
 import SelectField from "@/features/shared/components/ui/SelectField";
 import ImageUploader, { type UploadedImage } from "@/features/dealer-panel/components/ImageUploader";
 import type { FormState } from "@/features/dealer-panel/actions";
@@ -134,6 +135,7 @@ export default function DealerForm({ action, cities, dealer, logo, cover, submit
           {state.message}
         </p>
       )}
+      {!dealer && <TermsCheckbox variant="dealer" error={e.terms} />}
       <div>
         <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
       </div>

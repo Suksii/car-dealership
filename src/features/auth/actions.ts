@@ -30,6 +30,7 @@ const registerSchema = z
     phone: z.string().trim().min(6, "Unesi broj telefona"),
     password: z.string().min(8, "Lozinka mora imati bar 8 karaktera"),
     passwordConfirm: z.string(),
+    terms: z.literal("on", { message: "Moraš prihvatiti uslove korišćenja" }),
   })
   .refine((d) => d.password === d.passwordConfirm, { path: ["passwordConfirm"], message: "Lozinke se ne poklapaju" });
 
@@ -42,7 +43,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   if (existing) return { errors: { email: "Nalog sa ovim emailom već postoji" } };
 
   const passwordHash = await bcrypt.hash(password, 10);
-  await db.insert(users).values({ name, email, phone, passwordHash });
+  await db.insert(users).values({ name, email, phone, passwordHash, termsAcceptedAt: new Date() });
 
   await signIn("credentials", { email, password, redirectTo: "/nalog" });
 }

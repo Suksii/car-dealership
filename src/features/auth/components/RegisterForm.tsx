@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { register, type FormState } from "@/features/auth/actions";
 import { Field, SubmitButton } from "@/features/shared/components/ui/Field";
+import TermsCheckbox from "@/features/legal/components/TermsCheckbox";
 
 export default function RegisterForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(register, undefined);
@@ -39,6 +40,7 @@ export default function RegisterForm() {
           required
           error={e.passwordConfirm}
         />
+        <TermsCheckbox error={e.terms} />
         <SubmitButton pending={pending}>Napravi nalog</SubmitButton>
       </form>
       <p className="text-muted text-sm">

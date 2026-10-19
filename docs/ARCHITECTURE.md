@@ -9,16 +9,17 @@ Next.js 16 (App Router, RSC, `cacheComponents`) + Postgres (Drizzle) + Auth.js v
 
 ## Domeni (`src/features/`)
 
-| Domen          | Šta drži                                                                                                                        |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `auth`         | prijava/registracija (forme, server akcije), `pages/AccountPage`                                                                |
-| `dealer-panel` | panel autoplaca `/plac`: profil, oglasi, upload slika                                                                           |
-| `listings`     | validacija oglasa (`lib/listing.ts`), labele (`lib/labels.ts`), javna lista i stranica oglasa, `api/` (keširani upiti, sitemap) |
-| `dealers`      | javna lista placeva i stranica placa, `api/getDealers`                                                                          |
-| `favorites`    | srce na kartici (`FavoriteButton`), `FavoritesProvider` (stanje po sesiji, `GET /api/favorites`), `/nalog/favoriti`             |
-| `admin`        | `/admin` (odobravanje/suspenzija/isticanje placeva) i `/admin/oglasi` (skidanje oglasa); `api/` bez keša, `requireAdmin()`      |
-| `home`         | naslovna                                                                                                                        |
-| `shared`       | `components/ui/*` (Button, Select, Field, Modal…), `components/layout/*` (Header, Footer)                                       |
+| Domen          | Šta drži                                                                                                                                                                                                       |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `auth`         | prijava/registracija (forme, server akcije), `pages/AccountPage`                                                                                                                                               |
+| `dealer-panel` | panel autoplaca `/plac`: profil, oglasi, upload slika                                                                                                                                                          |
+| `listings`     | validacija oglasa (`lib/listing.ts`), labele (`lib/labels.ts`), javna lista i stranica oglasa, `api/` (keširani upiti, sitemap)                                                                                |
+| `dealers`      | javna lista placeva i stranica placa, `api/getDealers`                                                                                                                                                         |
+| `favorites`    | srce na kartici (`FavoriteButton`), `FavoritesProvider` (stanje po sesiji, `GET /api/favorites`), `/nalog/favoriti`                                                                                            |
+| `admin`        | `/admin` (odobravanje/suspenzija/isticanje placeva) i `/admin/oglasi` (skidanje oglasa); `api/` bez keša, `requireAdmin()`                                                                                     |
+| `legal`        | `/uslovi`, `/privatnost` (tekst u `pages/`, okvir `LegalPage`, stil `.legal-prose`), `TermsCheckbox` na registraciji naloga i placa → `users/dealers.terms_accepted_at`; datum verzije u `SITE.legalUpdatedAt` |
+| `home`         | naslovna                                                                                                                                                                                                       |
+| `shared`       | `components/ui/*` (Button, Select, Field, Modal…), `components/layout/*` (Header, Footer)                                                                                                                      |
 
 Svaki domen: `components/` (klijent i server komponente), `pages/` (sastavljene
 stranice koje `app/` rute renderuju), `actions.ts` (server akcije), `lib/`

@@ -164,6 +164,22 @@
 }
 
 @layer components {
+  /* Pravne stranice: jednostavna tipografija bez typography plugina. */
+  .legal-prose h2 {
+    @apply mt-8 mb-2 text-lg font-bold tracking-tight;
+  }
+  .legal-prose p {
+    @apply text-sm leading-relaxed text-neutral-700;
+  }
+  .legal-prose ul {
+    @apply flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed text-neutral-700;
+  }
+  .legal-prose a {
+    @apply text-foreground hover:text-accent font-medium underline;
+  }
+  .legal-prose strong {
+    @apply text-foreground font-semibold;
+  }
   .field-label {
     @apply text-foreground text-sm font-medium;
   }
