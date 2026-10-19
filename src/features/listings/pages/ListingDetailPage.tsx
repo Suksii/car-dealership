@@ -193,7 +193,11 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
               )}
             </div>
             <div className="text-muted mt-3 flex items-center justify-between gap-3 text-xs">
-              <p>{`Objavljeno ${formatDate(l.publishedAt, undefined, "–")} · ${l.viewsCount} pregleda`}</p>
+              <p>
+                {`Objavljeno ${formatDate(l.publishedAt, undefined, "–")}`}
+                {l.publishedAgo && ` (${l.publishedAgo})`}
+                {` · ${l.viewsCount} pregleda`}
+              </p>
               <ReportButton listingId={l.id} />
             </div>
           </div>

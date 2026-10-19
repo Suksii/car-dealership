@@ -35,3 +35,29 @@ export function pluralSr(count: number, [one, few, other]: [string, string, stri
   const c = pluralRules.select(count);
   return c === "one" ? one : c === "few" ? few : other;
 }
+
+const DAY_MS = 86400_000;
+
+/**
+ * Starost na nivou dana, ijekavski: "danas", "juče", "prije 5 dana", "prije 2 sedmice",
+ * "prije 3 mjeseca". Ručno, jer ICU za `sr` daje ekavicu ("pre 2 dana").
+ */
+export function formatRelativeDay(value: Date | string | number | null | undefined, now = Date.now()): string | null {
+  if (value == null) return null;
+  const t = value instanceof Date ? value.getTime() : new Date(value).getTime();
+  if (Number.isNaN(t)) return null;
+  const days = Math.max(0, Math.floor((now - t) / DAY_MS));
+  if (days === 0) return "danas";
+  if (days === 1) return "juče";
+  if (days < 7) return `prije ${days} ${pluralSr(days, ["dan", "dana", "dana"])}`;
+  if (days < 30) {
+    const w = Math.floor(days / 7);
+    return `prije ${w} ${pluralSr(w, ["sedmicu", "sedmice", "sedmica"])}`;
+  }
+  if (days < 365) {
+    const m = Math.floor(days / 30);
+    return `prije ${m} ${pluralSr(m, ["mjesec", "mjeseca", "mjeseci"])}`;
+  }
+  const y = Math.floor(days / 365);
+  return `prije ${y} ${pluralSr(y, ["godinu", "godine", "godina"])}`;
+}

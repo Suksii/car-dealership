@@ -10,7 +10,10 @@ zaobljeni uglovi, puno prostora, jedan akcenat), prilagođen oglasniku:
 - Tamni hero sa radijalnim sjajem i gradijent pozadine umjesto fotografije.
 - Red od tri kartice sa ikonom u obojenom kvadratu i generičkim tekstom.
 - Ikone uz svaku specifikaciju na kartici; specifikacije su jedan red teksta
-  razdvojen tačkom (`2019 · 89.000 km · Dizel · Automatski`).
+  razdvojen tačkom (`2019 · 89.000 km · Dizel · Automatski`). Na telefonu su
+  kartice dvije u redu (navika sa domaćih oglasnika), pa kartica ispod `sm`
+  gubi varijantu, mjenjač i ime placa, a zadržava sliku, naziv, godište,
+  kilometražu, gorivo, cijenu, grad i starost oglasa („prije 3 dana").
 - Uppercase „eyebrow“ iznad svakog naslova; naslov sekcije je sam, sa jednim
   tekstualnim linkom desno (`SectionTitle` u `HomePage`).
 - Placeholder/gradijent slike u demo podacima — demo koristi prave fotografije.

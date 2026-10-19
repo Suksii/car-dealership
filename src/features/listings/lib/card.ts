@@ -1,4 +1,5 @@
 import { imageUrl } from "@/lib/images";
+import { formatRelativeDay } from "@/lib/utils/format";
 import { listingPath, listingTitle } from "./listing";
 import type { FuelKey, TransmissionKey, BodyKey } from "./labels";
 
@@ -25,6 +26,8 @@ export interface ListingCardItem {
   city: string;
   dealer: { name: string; slug: string } | null;
   isNew: boolean;
+  /** "danas", "juče", "prije 5 dana"… (na nivou dana, računato pri keširanju liste). */
+  publishedAgo: string | null;
   customsCleared: boolean;
 }
 
@@ -75,6 +78,7 @@ export function toCardItem(row: Row, now: number): ListingCardItem {
     city: row.city.name,
     dealer: row.dealer ? { name: row.dealer.name, slug: row.dealer.slug } : null,
     isNew: !!row.publishedAt && now - row.publishedAt.getTime() < NEW_DAYS * 86400_000,
+    publishedAgo: formatRelativeDay(row.publishedAt, now),
     customsCleared: row.customsCleared,
   };
 }

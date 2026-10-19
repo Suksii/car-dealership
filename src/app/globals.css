@@ -80,7 +80,7 @@
   @apply bg-surface shadow-card rounded-2xl p-5 md:p-8;
 }
 @utility grid-listings {
-  @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  @apply grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4;
 }
 @utility eyebrow {
   @apply text-xs font-bold tracking-widest uppercase;
