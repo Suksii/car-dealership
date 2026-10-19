@@ -9,8 +9,15 @@ export default function SortSelect({ filters }: { filters: ListingFilters }) {
   const router = useRouter();
   return (
     <div className="w-56">
-      <Select size="sm" options={[...SORT_OPTIONS]} value={filters.sort ?? "newest"}
-        onChange={(v) => { const q = filtersToQuery({ ...filters, sort: v as ListingFilters["sort"], page: 1 }); router.push(`/automobili${q ? `?${q}` : ""}`); }} />
+      <Select
+        size="sm"
+        options={[...SORT_OPTIONS]}
+        value={filters.sort ?? "newest"}
+        onChange={(v) => {
+          const q = filtersToQuery({ ...filters, sort: v as ListingFilters["sort"], page: 1 });
+          router.push(`/automobili${q ? `?${q}` : ""}`);
+        }}
+      />
     </div>
   );
 }

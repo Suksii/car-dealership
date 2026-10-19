@@ -1,0 +1,47 @@
+"use server";
+
+import { z } from "zod";
+import { eq } from "drizzle-orm";
+import { revalidatePath, updateTag } from "next/cache";
+import { db } from "@/db";
+import { dealers, listings } from "@/db/schema";
+import { requireAdmin } from "@/lib/dal";
+import { LISTINGS_TAG } from "@/features/listings/api/getListings";
+import { DEALERS_TAG } from "@/features/dealers/api/getDealers";
+
+const uuid = z.uuid();
+const dealerStatus = z.enum(["pending", "active", "suspended"]);
+
+function invalidate() {
+  updateTag(DEALERS_TAG);
+  updateTag(LISTINGS_TAG);
+  revalidatePath("/admin", "layout");
+}
+
+export async function setDealerStatus(dealerId: string, status: "pending" | "active" | "suspended") {
+  await requireAdmin();
+  await db
+    .update(dealers)
+    .set({ status: dealerStatus.parse(status) })
+    .where(eq(dealers.id, uuid.parse(dealerId)));
+  invalidate();
+}
+
+export async function setDealerFeatured(dealerId: string, featured: boolean) {
+  await requireAdmin();
+  await db
+    .update(dealers)
+    .set({ isFeatured: featured })
+    .where(eq(dealers.id, uuid.parse(dealerId)));
+  invalidate();
+}
+
+/** Admin skida oglas sa sajta (status removed); plac ga vidi kao obrisan. */
+export async function removeListingByAdmin(listingId: string) {
+  await requireAdmin();
+  await db
+    .update(listings)
+    .set({ status: "removed" })
+    .where(eq(listings.id, uuid.parse(listingId)));
+  invalidate();
+}

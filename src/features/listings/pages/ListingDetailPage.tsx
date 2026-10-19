@@ -3,13 +3,23 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { MapPin, Store } from "lucide-react";
 import { getListingByPublicId } from "@/features/listings/api/getListing";
-import { FUEL, TRANSMISSION, BODY, DRIVE, CONDITION, FEATURE_GROUP, LISTING_STATUS } from "@/features/listings/lib/labels";
+import {
+  FUEL,
+  TRANSMISSION,
+  BODY,
+  DRIVE,
+  CONDITION,
+  FEATURE_GROUP,
+  LISTING_STATUS,
+} from "@/features/listings/lib/labels";
 import Gallery from "@/features/listings/components/Gallery";
 import ContactButtons from "@/features/listings/components/ContactButtons";
 import Breadcrumbs from "@/features/shared/components/ui/Breadcrumbs";
 import Badge from "@/features/shared/components/ui/Badge";
 import Button from "@/features/shared/components/ui/Button";
 import { formatDate, formatKm, formatPrice, kwToHp } from "@/lib/utils/format";
+import { SITE } from "@/config/site";
+import FavoriteButton from "@/features/favorites/components/FavoriteButton";
 
 export function publicIdFromSlug(slug: string) {
   return slug.slice(slug.lastIndexOf("-") + 1);
@@ -42,20 +52,73 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   for (const f of l.featureList) groups.set(f.group, [...(groups.get(f.group) ?? []), f.name]);
   const sold = l.status !== "active";
 
+  // schema.org Car + Offer za Google (bogati rezultati za vozila). Samo javni podaci.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Car",
+    name: `${l.title} ${l.year}`,
+    brand: { "@type": "Brand", name: l.make.name },
+    model: l.model.name,
+    vehicleModelDate: String(l.year),
+    mileageFromOdometer: { "@type": "QuantitativeValue", value: l.mileageKm, unitCode: "KMT" },
+    fuelType: FUEL[l.fuel],
+    vehicleTransmission: TRANSMISSION[l.transmission],
+    bodyType: BODY[l.bodyType],
+    color: l.color ?? undefined,
+    image: l.gallery.map((g) => g.full),
+    url: `${SITE.url}/oglas/${slug}`,
+    offers: {
+      "@type": "Offer",
+      price: l.priceOnRequest ? undefined : l.priceEur,
+      priceCurrency: "EUR",
+      availability: sold ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+      itemCondition: l.condition === "new" ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition",
+      seller: {
+        "@type": "AutoDealer",
+        name: l.dealer.name,
+        telephone: l.dealer.phone,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: l.dealer.city.name,
+          streetAddress: l.dealer.address ?? undefined,
+          addressCountry: "ME",
+        },
+      },
+    },
+  };
+
   return (
     <div className="container-page py-6 md:py-8">
-      <Breadcrumbs items={[{ label: "Automobili", href: "/automobili" }, { label: l.make.name, href: `/automobili?marka=${l.make.slug}` }, { label: l.model.name, href: `/automobili?marka=${l.make.slug}&model=${l.model.slug}` }]} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
+      <Breadcrumbs
+        items={[
+          { label: "Automobili", href: "/automobili" },
+          { label: l.make.name, href: `/automobili?marka=${l.make.slug}` },
+          { label: l.model.name, href: `/automobili?marka=${l.make.slug}&model=${l.model.slug}` },
+        ]}
+      />
 
       <div className="mt-4 grid gap-8 lg:grid-cols-[1fr_380px]">
         <div className="flex flex-col gap-8">
-          <Gallery images={l.gallery} alt={`${l.title} ${l.year}`} />
+          <div className="relative">
+            <Gallery images={l.gallery} alt={`${l.title} ${l.year}`} />
+            <FavoriteButton listingId={l.id} size={20} className="absolute top-3 right-3 h-11 w-11" />
+          </div>
 
           <section className="card p-6">
             <h2 className="mb-4 text-lg font-bold tracking-tight">Specifikacije</h2>
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-3">
-              {specs.filter(([, v]) => v).map(([k, v]) => (
-                <div key={k} className="border-b border-border pb-2"><dt className="text-xs text-muted">{k}</dt><dd className="font-medium">{v}</dd></div>
-              ))}
+              {specs
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k} className="border-border border-b pb-2">
+                    <dt className="text-muted text-xs">{k}</dt>
+                    <dd className="font-medium">{v}</dd>
+                  </div>
+                ))}
             </dl>
           </section>
 
@@ -65,8 +128,14 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
               <div className="flex flex-col gap-4">
                 {[...groups.entries()].map(([g, names]) => (
                   <div key={g}>
-                    <p className="eyebrow mb-2 text-muted">{FEATURE_GROUP[g as keyof typeof FEATURE_GROUP] ?? g}</p>
-                    <ul className="flex flex-wrap gap-2">{names.map((n) => <li key={n} className="rounded-full bg-neutral-100 px-3 py-1 text-sm">{n}</li>)}</ul>
+                    <p className="eyebrow text-muted mb-2">{FEATURE_GROUP[g as keyof typeof FEATURE_GROUP] ?? g}</p>
+                    <ul className="flex flex-wrap gap-2">
+                      {names.map((n) => (
+                        <li key={n} className="rounded-full bg-neutral-100 px-3 py-1 text-sm">
+                          {n}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 ))}
               </div>
@@ -89,25 +158,58 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
               {l.priceNegotiable && <Badge>Po dogovoru</Badge>}
             </div>
             <h1 className="text-2xl font-bold tracking-tight">{l.title}</h1>
-            <p className="mt-1 text-sm text-muted">{l.year} · {formatKm(l.mileageKm)} · {FUEL[l.fuel]}</p>
-            <p className="mt-4 text-3xl font-extrabold tracking-tight">{l.priceOnRequest ? <span className="text-xl font-semibold text-muted">Cijena na upit</span> : formatPrice(l.priceEur)}</p>
+            <p className="text-muted mt-1 text-sm">
+              {l.year} · {formatKm(l.mileageKm)} · {FUEL[l.fuel]}
+            </p>
+            <p className="mt-4 text-3xl font-extrabold tracking-tight">
+              {l.priceOnRequest ? (
+                <span className="text-muted text-xl font-semibold">Cijena na upit</span>
+              ) : (
+                formatPrice(l.priceEur)
+              )}
+            </p>
             <div className="mt-5">
-              {sold ? <p className="text-sm text-muted">Ovaj oglas više nije aktivan.</p> : <ContactButtons listingId={l.id} phone={l.dealer.phone} viber={l.dealer.viber ?? l.dealer.phone} whatsapp={l.dealer.whatsapp} />}
+              {sold ? (
+                <p className="text-muted text-sm">Ovaj oglas više nije aktivan.</p>
+              ) : (
+                <ContactButtons
+                  listingId={l.id}
+                  phone={l.dealer.phone}
+                  viber={l.dealer.viber ?? l.dealer.phone}
+                  whatsapp={l.dealer.whatsapp}
+                />
+              )}
             </div>
-            <p className="mt-3 text-xs text-muted">Objavljeno {formatDate(l.publishedAt, undefined, "–")} · {l.viewsCount} pregleda</p>
+            <p className="text-muted mt-3 text-xs">
+              Objavljeno {formatDate(l.publishedAt, undefined, "–")} · {l.viewsCount} pregleda
+            </p>
           </div>
 
           <div className="card p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-neutral-100">
-                {l.dealer.logo ? <Image src={l.dealer.logo} alt="" width={48} height={48} className="h-full w-full object-cover" /> : <Store size={20} className="text-neutral-400" aria-hidden="true" />}
+                {l.dealer.logo ? (
+                  <Image src={l.dealer.logo} alt="" width={48} height={48} className="h-full w-full object-cover" />
+                ) : (
+                  <Store size={20} className="text-neutral-400" aria-hidden="true" />
+                )}
               </div>
               <div className="min-w-0">
-                <p className="truncate font-bold"><Link href={`/placevi/${l.dealer.slug}`} className="hover:text-accent">{l.dealer.name}</Link></p>
-                <p className="flex items-center gap-1 text-xs text-muted"><MapPin size={12} aria-hidden="true" />{l.dealer.address ? `${l.dealer.address}, ` : ""}{l.dealer.city.name}</p>
+                <p className="truncate font-bold">
+                  <Link href={`/placevi/${l.dealer.slug}`} className="hover:text-accent">
+                    {l.dealer.name}
+                  </Link>
+                </p>
+                <p className="text-muted flex items-center gap-1 text-xs">
+                  <MapPin size={12} aria-hidden="true" />
+                  {l.dealer.address ? `${l.dealer.address}, ` : ""}
+                  {l.dealer.city.name}
+                </p>
               </div>
             </div>
-            <Button href={`/placevi/${l.dealer.slug}`} variant="outline" size="sm" fullWidth className="mt-4">Sva vozila ovog placa</Button>
+            <Button href={`/placevi/${l.dealer.slug}`} variant="outline" size="sm" fullWidth className="mt-4">
+              Sva vozila ovog placa
+            </Button>
           </div>
         </aside>
       </div>

@@ -22,7 +22,10 @@ export async function trackContactClick(listingId: string, type: ContactType) {
 /** Brojač pregleda; poziva se jednom po učitavanju stranice oglasa. */
 export async function trackView(listingId: string) {
   try {
-    await db.update(listings).set({ viewsCount: sql`${listings.viewsCount} + 1` }).where(eq(listings.id, listingId));
+    await db
+      .update(listings)
+      .set({ viewsCount: sql`${listings.viewsCount} + 1` })
+      .where(eq(listings.id, listingId));
   } catch {
     // isto
   }

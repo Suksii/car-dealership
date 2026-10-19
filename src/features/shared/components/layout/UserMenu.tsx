@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { ChevronDown, LogOut, Store, UserRound } from "lucide-react";
+import { ChevronDown, Heart, LogOut, ShieldCheck, Store, UserRound } from "lucide-react";
 import Button from "@/features/shared/components/ui/Button";
 import { useOutsideClick } from "@/lib/hooks/useOutsideClick";
 import { useKeyboardNav } from "@/lib/hooks/useKeyboardNav";
@@ -56,9 +56,17 @@ export default function UserMenu({ stacked = false }: { stacked?: boolean }) {
         <Button href="/plac" size="sm" fullWidth>
           <Store size={16} aria-hidden="true" /> Moj autoplac
         </Button>
+        <Button href="/nalog/favoriti" variant="outline" size="sm" fullWidth>
+          <Heart size={16} aria-hidden="true" /> Sačuvani oglasi
+        </Button>
         <Button href="/nalog" variant="outline" size="sm" fullWidth>
           <UserRound size={16} aria-hidden="true" /> Moj nalog
         </Button>
+        {session.user.role === "admin" && (
+          <Button href="/admin" variant="outline" size="sm" fullWidth>
+            <ShieldCheck size={16} aria-hidden="true" /> Admin
+          </Button>
+        )}
         <Button type="button" variant="ghost" size="sm" fullWidth onClick={logout}>
           <LogOut size={16} aria-hidden="true" /> Odjava
         </Button>
@@ -103,9 +111,17 @@ export default function UserMenu({ stacked = false }: { stacked?: boolean }) {
             <MenuItem href="/nalog" onClick={() => setOpen(false)}>
               <UserRound size={16} aria-hidden="true" /> Moj nalog
             </MenuItem>
+            <MenuItem href="/nalog/favoriti" onClick={() => setOpen(false)}>
+              <Heart size={16} aria-hidden="true" /> Sačuvani oglasi
+            </MenuItem>
             <MenuItem href="/plac" onClick={() => setOpen(false)}>
               <Store size={16} aria-hidden="true" /> Moj autoplac
             </MenuItem>
+            {session.user.role === "admin" && (
+              <MenuItem href="/admin" onClick={() => setOpen(false)}>
+                <ShieldCheck size={16} aria-hidden="true" /> Admin
+              </MenuItem>
+            )}
             <div className="border-border my-1 border-t" />
             <button
               type="button"

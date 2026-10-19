@@ -11,9 +11,18 @@ function fd(entries: Record<string, string | string[]>) {
 }
 
 const valid = {
-  makeId: "1", modelId: "6", year: "2016", mileageKm: "154000", condition: "used", fuel: "diesel",
-  transmission: "manual", bodyType: "hatchback", priceEur: "11900", cityId: "1",
-  images: JSON.stringify([{ key: "listings/2026/abc", width: 1600, height: 1200 }]), features: ["16", "17"],
+  makeId: "1",
+  modelId: "6",
+  year: "2016",
+  mileageKm: "154000",
+  condition: "used",
+  fuel: "diesel",
+  transmission: "manual",
+  bodyType: "hatchback",
+  priceEur: "11900",
+  cityId: "1",
+  images: JSON.stringify([{ key: "listings/2026/abc", width: 1600, height: 1200 }]),
+  features: ["16", "17"],
 };
 
 describe("listingSchema", () => {
@@ -29,7 +38,9 @@ describe("listingSchema", () => {
   });
   it("traži cijenu osim kad je 'na upit'", () => {
     expect(listingSchema.safeParse(listingFormToObject(fd({ ...valid, priceEur: "0" }))).success).toBe(false);
-    expect(listingSchema.safeParse(listingFormToObject(fd({ ...valid, priceEur: "0", priceOnRequest: "on" }))).success).toBe(true);
+    expect(
+      listingSchema.safeParse(listingFormToObject(fd({ ...valid, priceEur: "0", priceOnRequest: "on" }))).success,
+    ).toBe(true);
   });
   it("odbija godište u budućnosti", () => {
     expect(listingSchema.safeParse(listingFormToObject(fd({ ...valid, year: "2099" }))).success).toBe(false);
@@ -37,7 +48,10 @@ describe("listingSchema", () => {
   it("prazna opciona polja postaju undefined", () => {
     const r = listingSchema.safeParse(listingFormToObject(fd({ ...valid, drive: "", engineCc: "" })));
     expect(r.success).toBe(true);
-    if (r.success) { expect(r.data.drive).toBeUndefined(); expect(r.data.engineCc).toBeUndefined(); }
+    if (r.success) {
+      expect(r.data.drive).toBeUndefined();
+      expect(r.data.engineCc).toBeUndefined();
+    }
   });
 });
 

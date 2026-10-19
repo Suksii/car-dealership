@@ -29,10 +29,24 @@ export interface ListingCardItem {
 }
 
 type Row = {
-  id: string; slug: string; publicId: string; year: number; mileageKm: number; fuel: FuelKey; transmission: TransmissionKey;
-  bodyType: BodyKey; powerKw: number | null; priceEur: number; priceOnRequest: boolean; priceNegotiable: boolean; variant: string | null;
-  customsCleared: boolean; publishedAt: Date | null;
-  make: { name: string }; model: { name: string }; city: { name: string };
+  id: string;
+  slug: string;
+  publicId: string;
+  year: number;
+  mileageKm: number;
+  fuel: FuelKey;
+  transmission: TransmissionKey;
+  bodyType: BodyKey;
+  powerKw: number | null;
+  priceEur: number;
+  priceOnRequest: boolean;
+  priceNegotiable: boolean;
+  variant: string | null;
+  customsCleared: boolean;
+  publishedAt: Date | null;
+  make: { name: string };
+  model: { name: string };
+  city: { name: string };
   dealer: { name: string; slug: string } | null;
   images: { storageKey: string }[];
 };

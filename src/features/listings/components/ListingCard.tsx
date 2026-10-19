@@ -4,6 +4,7 @@ import { formatKm, formatPrice } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { FUEL, TRANSMISSION } from "@/features/listings/lib/labels";
 import type { ListingCardItem } from "@/features/listings/lib/card";
+import FavoriteButton from "@/features/favorites/components/FavoriteButton";
 
 interface Props {
   item: ListingCardItem;
@@ -36,6 +37,7 @@ export default function ListingCard({ item, priority = false, className }: Props
         {item.isNew && (
           <span className="bg-foreground/90 absolute top-3 left-3 rounded-md px-2 py-0.5 text-xs font-bold text-white">
             Novo
+            <FavoriteButton listingId={item.id} className="absolute top-3 right-3" />
           </span>
         )}
       </div>

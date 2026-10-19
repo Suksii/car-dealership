@@ -32,3 +32,10 @@ export async function requireDealer() {
   if (!dealer) redirect("/plac/registracija");
   return dealer;
 }
+
+/** Admin sesija ili redirect na naslovnu (proxy već štiti /admin, ovo je druga linija). */
+export const requireAdmin = cache(async () => {
+  const session = await requireSession("/admin");
+  if (session.user.role !== "admin") redirect("/");
+  return session;
+});

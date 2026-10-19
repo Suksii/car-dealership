@@ -15,7 +15,9 @@ export async function getListingByPublicId(publicId: string) {
   const row = await db.query.listings.findFirst({
     where: eq(listings.publicId, publicId),
     with: {
-      make: true, model: true, city: true,
+      make: true,
+      model: true,
+      city: true,
       dealer: { with: { city: true } },
       images: { orderBy: (i, { asc }) => asc(i.sortOrder) },
       features: { with: { feature: true } },
@@ -33,7 +35,12 @@ export async function getListingByPublicId(publicId: string) {
     soldAt: row.soldAt?.toISOString() ?? null,
     expiresAt: row.expiresAt?.toISOString() ?? null,
     title: listingTitle(row.make.name, row.model.name, row.variant),
-    gallery: row.images.map((i) => ({ full: imageUrl(i.storageKey, "full"), thumb: imageUrl(i.storageKey, "thumb"), width: i.width, height: i.height })),
+    gallery: row.images.map((i) => ({
+      full: imageUrl(i.storageKey, "full"),
+      thumb: imageUrl(i.storageKey, "thumb"),
+      width: i.width,
+      height: i.height,
+    })),
     featureList: row.features.map((f) => f.feature),
     dealer: {
       ...row.dealer,

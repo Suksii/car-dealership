@@ -3,8 +3,12 @@ import { FUEL, TRANSMISSION, BODY } from "./labels";
 
 type SP = Record<string, string | string[] | undefined>;
 const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined;
-const num = (v: string | string[] | undefined) => { const n = Number(str(v)); return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined; };
-const oneOf = <T extends string>(v: string | undefined, keys: readonly string[]): T | undefined => (v && keys.includes(v) ? (v as T) : undefined);
+const num = (v: string | string[] | undefined) => {
+  const n = Number(str(v));
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
+};
+const oneOf = <T extends string>(v: string | undefined, keys: readonly string[]): T | undefined =>
+  v && keys.includes(v) ? (v as T) : undefined;
 
 export const SORT_OPTIONS = [
   { value: "newest", label: "Najnovije" },
@@ -29,14 +33,29 @@ export function parseFilters(sp: SP): ListingFilters {
     fuel: oneOf(str(sp.gorivo), Object.keys(FUEL)),
     transmission: oneOf(str(sp.mjenjac), Object.keys(TRANSMISSION)),
     body: oneOf(str(sp.karoserija), Object.keys(BODY)),
-    sort: oneOf(str(sp.sort), SORT_OPTIONS.map((o) => o.value)) ?? "newest",
+    sort:
+      oneOf(
+        str(sp.sort),
+        SORT_OPTIONS.map((o) => o.value),
+      ) ?? "newest",
     page: num(sp.page) ?? 1,
   };
 }
 
 const KEYS: Record<keyof Omit<ListingFilters, "page">, string> = {
-  make: "marka", model: "model", city: "grad", dealer: "plac", priceMin: "cijena_od", priceMax: "cijena_do",
-  yearMin: "godiste_od", yearMax: "godiste_do", kmMax: "km_do", fuel: "gorivo", transmission: "mjenjac", body: "karoserija", sort: "sort",
+  make: "marka",
+  model: "model",
+  city: "grad",
+  dealer: "plac",
+  priceMin: "cijena_od",
+  priceMax: "cijena_do",
+  yearMin: "godiste_od",
+  yearMax: "godiste_do",
+  kmMax: "km_do",
+  fuel: "gorivo",
+  transmission: "mjenjac",
+  body: "karoserija",
+  sort: "sort",
 };
 
 /** Query string iz filtera (bez page, bez default sorta). */
@@ -53,5 +72,20 @@ export function filtersToQuery(f: ListingFilters, overrides: Partial<ListingFilt
 }
 
 export function countActiveFilters(f: ListingFilters): number {
-  return (["make", "model", "city", "dealer", "priceMin", "priceMax", "yearMin", "yearMax", "kmMax", "fuel", "transmission", "body"] as const).filter((k) => f[k] !== undefined).length;
+  return (
+    [
+      "make",
+      "model",
+      "city",
+      "dealer",
+      "priceMin",
+      "priceMax",
+      "yearMin",
+      "yearMax",
+      "kmMax",
+      "fuel",
+      "transmission",
+      "body",
+    ] as const
+  ).filter((k) => f[k] !== undefined).length;
 }
