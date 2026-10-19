@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { and, asc, count, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { listings, dealers, makes, models, cities } from "@/db/schema";
 import { toCardItem, type ListingCardItem } from "@/features/listings/lib/card";
@@ -11,17 +11,18 @@ export const PAGE_SIZE = 24;
 
 export interface ListingFilters {
   make?: string; // slug
-  model?: string; // slug
-  city?: string; // slug
+  /** Više modela iste marke (slugovi), URL `model=a3,a4`. */
+  model?: string[];
+  city?: string[]; // slugovi
   dealer?: string; // slug
   priceMin?: number;
   priceMax?: number;
   yearMin?: number;
   yearMax?: number;
   kmMax?: number;
-  fuel?: FuelKey;
-  transmission?: TransmissionKey;
-  body?: BodyKey;
+  fuel?: FuelKey[];
+  transmission?: TransmissionKey[];
+  body?: BodyKey[];
   sort?: "newest" | "price_asc" | "price_desc" | "year_desc" | "km_asc";
   page?: number;
 }
@@ -33,17 +34,17 @@ const publicListing = () =>
 function whereFor(f: ListingFilters): SQL[] {
   const w: SQL[] = [];
   if (f.make) w.push(eq(makes.slug, f.make));
-  if (f.model) w.push(eq(models.slug, f.model));
-  if (f.city) w.push(eq(cities.slug, f.city));
+  if (f.model?.length) w.push(inArray(models.slug, f.model));
+  if (f.city?.length) w.push(inArray(cities.slug, f.city));
   if (f.dealer) w.push(eq(dealers.slug, f.dealer));
   if (f.priceMin) w.push(gte(listings.priceEur, f.priceMin));
   if (f.priceMax) w.push(and(lte(listings.priceEur, f.priceMax), eq(listings.priceOnRequest, false))!);
   if (f.yearMin) w.push(gte(listings.year, f.yearMin));
   if (f.yearMax) w.push(lte(listings.year, f.yearMax));
   if (f.kmMax) w.push(lte(listings.mileageKm, f.kmMax));
-  if (f.fuel) w.push(eq(listings.fuel, f.fuel));
-  if (f.transmission) w.push(eq(listings.transmission, f.transmission));
-  if (f.body) w.push(eq(listings.bodyType, f.body));
+  if (f.fuel?.length) w.push(inArray(listings.fuel, f.fuel));
+  if (f.transmission?.length) w.push(inArray(listings.transmission, f.transmission));
+  if (f.body?.length) w.push(inArray(listings.bodyType, f.body));
   return w;
 }
 

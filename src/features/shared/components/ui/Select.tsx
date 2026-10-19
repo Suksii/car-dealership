@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -11,18 +11,17 @@ import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { useIsClient } from "@/lib/hooks/useIsClient";
 import { usePresence } from "@/lib/hooks/usePresence";
 import { BREAKPOINTS } from "@/lib/breakpoints";
+import Button from "@/features/shared/components/ui/Button";
 
 export interface SelectOption {
   value: string;
   label: string;
 }
 
-export interface SelectProps {
+interface SelectBaseProps {
   options: SelectOption[];
-  value: string;
-  onChange: (value: string) => void;
   placeholder?: string;
-  /** Ime skrivenog polja, da vrijednost ode u FormData server akcije. */
+  /** Ime skrivenog polja, da vrijednost ode u FormData server akcije (kod više izbora: spojeno zarezom). */
   name?: string;
   id?: string;
   className?: string;
@@ -39,6 +38,27 @@ export interface SelectProps {
   "aria-describedby"?: string;
 }
 
+interface SelectSingleProps {
+  multiple?: false;
+  value: string;
+  onChange: (value: string) => void;
+  values?: never;
+  onValuesChange?: never;
+}
+
+/** Više izbora: lista ostaje otvorena, svaka stavka se štiklira; u polju su izabrane stavke spojene zarezom. */
+interface SelectMultipleProps {
+  multiple: true;
+  values: string[];
+  onValuesChange: (values: string[]) => void;
+  value?: never;
+  onChange?: never;
+}
+
+export type SelectProps = SelectBaseProps & (SelectSingleProps | SelectMultipleProps);
+
+const EMPTY: string[] = [];
+
 const SIZE = { sm: "h-10 text-sm", md: "h-12 text-sm" } as const;
 const SHEET_QUERY = `(max-width: ${BREAKPOINTS.md - 1}px)`;
 
@@ -51,6 +71,9 @@ export default function Select({
   options,
   value,
   onChange,
+  multiple = false,
+  values = EMPTY,
+  onValuesChange,
   placeholder = "Izaberi",
   name,
   id,
@@ -77,7 +100,15 @@ export default function Select({
   const isClient = useIsClient();
   const sheet = usePresence(open && isSheet);
 
-  const selected = options.find((o) => o.value === value);
+  const chosen = useMemo(() => (multiple ? values : value ? [value] : EMPTY), [multiple, values, value]);
+  // Brzi uzastopni dodiri prije re-rendera ne smiju da pregaze jedan drugog.
+  const chosenRef = useRef(chosen);
+  useEffect(() => {
+    chosenRef.current = chosen;
+  }, [chosen]);
+  const selectedOpts = options.filter((o) => chosen.includes(o.value));
+  const selected = selectedOpts.length > 0;
+  const selectedLabel = selectedOpts.map((o) => o.label).join(", ");
   const q = query.trim().toLowerCase();
   const visible = searchable && q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
   const activeId = open && visible[focused] ? `${listId}-${focused}` : undefined;
@@ -101,14 +132,21 @@ export default function Select({
     setFocused(
       Math.max(
         0,
-        options.findIndex((o) => o.value === value),
+        options.findIndex((o) => chosen.includes(o.value)),
       ),
     );
     setOpen(true);
   };
 
   const select = (v: string) => {
-    onChange(v);
+    if (multiple) {
+      const cur = chosenRef.current;
+      const next = cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v];
+      chosenRef.current = next;
+      onValuesChange?.(next);
+      return; // lista ostaje otvorena za dalje štikliranje
+    }
+    onChange?.(v);
     setQuery("");
     setOpen(false);
   };
@@ -172,6 +210,7 @@ export default function Select({
       ref={listRef}
       id={listId}
       role="listbox"
+      aria-multiselectable={multiple || undefined}
       aria-label={ariaLabel ?? placeholder}
       className={cn("scrollbar-thin overflow-x-hidden overflow-y-auto", isSheet ? "sheet-list px-2 pb-4" : "max-h-64")}
     >
@@ -181,7 +220,7 @@ export default function Select({
         </li>
       ) : (
         visible.map((o, i) => {
-          const isSelected = o.value === value;
+          const isSelected = chosen.includes(o.value);
           return (
             <li
               key={o.value}
@@ -208,7 +247,7 @@ export default function Select({
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
-      {name && <input type="hidden" name={name} value={value} />}
+      {name && <input type="hidden" name={name} value={multiple ? values.join(",") : value} />}
       <div className="relative">
         <button
           type="button"
@@ -228,13 +267,14 @@ export default function Select({
           className={cn(
             "focus-visible:border-foreground focus-visible:ring-accent/20 flex w-full items-center justify-between gap-2 rounded-xl border bg-white pr-3 pl-4 text-left transition-colors outline-none focus-visible:ring-2",
             SIZE[size],
-            selected && clearable && "pr-16",
             invalid ? "border-danger" : open ? "border-foreground" : "border-border hover:border-neutral-400",
             disabled && "cursor-not-allowed bg-neutral-50 opacity-60",
           )}
         >
-          <span className={cn("truncate", selected ? "font-medium" : "text-neutral-500")}>
-            {selected?.label ?? placeholder}
+          <span
+            className={cn("truncate", selected ? "font-medium" : "text-neutral-500", selected && clearable && "mr-7")}
+          >
+            {selectedLabel || placeholder}
           </span>
           <ChevronDown
             size={16}
@@ -252,7 +292,8 @@ export default function Select({
             aria-label="Obriši izbor"
             onClick={(e) => {
               e.stopPropagation();
-              select("");
+              if (multiple) onValuesChange?.([]);
+              else select("");
             }}
             className="hover:text-foreground absolute top-1/2 right-9 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100"
           >
@@ -262,7 +303,7 @@ export default function Select({
       </div>
 
       {open && !isSheet && (
-        <div className="anim-pop-in shadow-custom ring-border absolute top-full left-0 z-50 mt-1.5 w-full min-w-56 rounded-2xl bg-white p-1.5 ring-1">
+        <div className="anim-pop-in shadow-custom ring-border absolute top-full left-0 z-50 mt-1.5 w-full rounded-2xl bg-white p-1.5 ring-1">
           {searchBox && <div className="mb-1.5">{searchBox}</div>}
           {list}
         </div>
@@ -305,6 +346,13 @@ export default function Select({
               </div>
               {searchBox && <div className="px-4 pb-2">{searchBox}</div>}
               {list}
+              {multiple && (
+                <div className="border-border border-t p-3">
+                  <Button fullWidth onClick={() => setOpen(false)}>
+                    {chosen.length > 0 ? `Gotovo (${chosen.length})` : "Gotovo"}
+                  </Button>
+                </div>
+              )}
             </div>
           </>,
           document.body,

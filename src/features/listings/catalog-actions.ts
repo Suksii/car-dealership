@@ -11,19 +11,24 @@ export async function loadModels(makeId: number): Promise<SlimModel[]> {
   return id.success ? getModelsForMake(id.data) : [];
 }
 
-const slug = z
+const slugStr = z
   .string()
   .min(1)
   .max(80)
-  .regex(/^[a-z0-9-]+$/)
-  .optional();
+  .regex(/^[a-z0-9-]+$/);
+const slug = slugStr.optional();
+const slugs = z.array(slugStr).max(20).optional();
 const posInt = z.number().int().positive().optional();
-const keys = <T extends Record<string, string>>(m: T) => z.enum(Object.keys(m) as [string, ...string[]]).optional();
+const keys = <T extends Record<string, string>>(m: T) =>
+  z
+    .array(z.enum(Object.keys(m) as [string, ...string[]]))
+    .max(20)
+    .optional();
 
 const countSchema = z.object({
   make: slug,
-  model: slug,
-  city: slug,
+  model: slugs,
+  city: slugs,
   dealer: slug,
   priceMin: posInt,
   priceMax: posInt,

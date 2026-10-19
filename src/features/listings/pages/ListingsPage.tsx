@@ -23,10 +23,11 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
   const activeCount = countActiveFilters(filters);
   const chips = activeFilterChips(filters, { makes, models, cities });
   const makeName = makes.find((m) => m.slug === filters.make)?.name;
-  const modelName = models.find(
-    (m) => m.slug === filters.model && m.makeId === makes.find((mk) => mk.slug === filters.make)?.id,
-  )?.name;
-  const title = [makeName, modelName].filter(Boolean).join(" ") || "Polovni automobili";
+  const modelNames = (filters.model ?? [])
+    .map((slug) => models.find((m) => m.slug === slug && m.makeId === makeIdSel)?.name)
+    .filter(Boolean)
+    .join(", ");
+  const title = [makeName, modelNames].filter(Boolean).join(" ") || "Polovni automobili";
   const hrefTemplate = `/automobili?${filtersToQuery({ ...filters, page: undefined })}${activeCount || (filters.sort && filters.sort !== "newest") ? "&" : ""}page={page}`;
 
   return (

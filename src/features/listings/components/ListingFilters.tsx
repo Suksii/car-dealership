@@ -115,6 +115,9 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
         ...(k === "make" ? { model: undefined } : {}),
       }));
   const s = (v: number | string | undefined) => (v === undefined ? "" : String(v));
+  type ManyKey = "model" | "city" | "fuel" | "transmission" | "body";
+  const setMany = (k: ManyKey) => (v: string[]) =>
+    setF((p) => ({ ...p, [k]: v.length ? (v as Filters[ManyKey]) : undefined, page: 1 }));
 
   function close() {
     setOpen(false);
@@ -128,12 +131,11 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
       setOpen(false);
     });
   }
-  function reset() {
+  /** Desktop: briše nacrt i odmah primjenjuje. Sheet: samo briše nacrt, brojač se osvježi, korisnik potvrdi. */
+  function reset(navigate: boolean) {
     setF({ sort: f.sort, page: 1 });
-    startTransition(() => {
-      router.push("/automobili");
-      setOpen(false);
-    });
+    if (!navigate || activeCount === 0) return;
+    startTransition(() => router.push("/automobili"));
   }
 
   const fields = (
@@ -154,8 +156,9 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
         <Select
           aria-label="Model"
           options={modelOpts}
-          value={s(f.model)}
-          onChange={set("model")}
+          multiple
+          values={f.model ?? []}
+          onValuesChange={setMany("model")}
           placeholder="Svi modeli"
           searchable
           clearable
@@ -226,8 +229,9 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
         <Select
           aria-label="Gorivo"
           options={FUEL_OPTS}
-          value={s(f.fuel)}
-          onChange={set("fuel")}
+          multiple
+          values={f.fuel ?? []}
+          onValuesChange={setMany("fuel")}
           placeholder="Sva goriva"
           clearable
           size="sm"
@@ -237,8 +241,9 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
         <Select
           aria-label="Mjenjač"
           options={TRANS_OPTS}
-          value={s(f.transmission)}
-          onChange={set("transmission")}
+          multiple
+          values={f.transmission ?? []}
+          onValuesChange={setMany("transmission")}
           placeholder="Svi"
           clearable
           size="sm"
@@ -248,8 +253,9 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
         <Select
           aria-label="Karoserija"
           options={BODY_OPTS}
-          value={s(f.body)}
-          onChange={set("body")}
+          multiple
+          values={f.body ?? []}
+          onValuesChange={setMany("body")}
           placeholder="Sve"
           clearable
           size="sm"
@@ -259,8 +265,9 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
         <Select
           aria-label="Grad"
           options={cityOpts}
-          value={s(f.city)}
-          onChange={set("city")}
+          multiple
+          values={f.city ?? []}
+          onValuesChange={setMany("city")}
           placeholder="Svi gradovi"
           searchable
           clearable
@@ -271,6 +278,16 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
   );
 
   const draftActive = countActiveFilters(f);
+  const resetLink = (navigate: boolean) =>
+    (draftActive > 0 || activeCount > 0) && (
+      <button
+        type="button"
+        onClick={() => reset(navigate)}
+        className="text-muted hover:text-foreground text-sm font-semibold underline-offset-2 transition-colors hover:underline"
+      >
+        Poništi
+      </button>
+    );
   const applyLabel =
     count === 0 ? "Nema oglasa za ove filtere" : `Prikaži ${count} ${pluralSr(count, ["oglas", "oglasa", "oglasa"])}`;
 
@@ -295,17 +312,14 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
 
       <aside className="card hidden p-5 lg:block" aria-label="Filteri">
         <div className="flex flex-col gap-4">
-          {fields}
-          <div className="mt-2 flex gap-2">
-            <Button onClick={apply} disabled={pending} fullWidth>
-              {pending ? "Tražim…" : "Primijeni"}
-            </Button>
-            {activeCount > 0 && (
-              <Button onClick={reset} variant="outline" aria-label="Poništi filtere">
-                <X size={16} aria-hidden="true" />
-              </Button>
-            )}
+          <div className="flex h-6 items-center justify-between gap-3">
+            <p className="text-base font-bold">Filteri</p>
+            {resetLink(true)}
           </div>
+          {fields}
+          <Button onClick={apply} disabled={pending} fullWidth className="mt-2">
+            {pending ? "Tražim…" : "Primijeni"}
+          </Button>
         </div>
       </aside>
 
@@ -334,17 +348,15 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
               <div className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-neutral-300" aria-hidden="true" />
               <div className="flex shrink-0 items-center justify-between gap-3 px-5 pt-3 pb-2">
                 <p className="text-base font-bold">Filteri</p>
-                <button type="button" aria-label="Zatvori" onClick={close} className="-m-2 p-2 text-neutral-500">
-                  <X size={20} aria-hidden="true" />
-                </button>
+                <div className="flex items-center gap-4">
+                  {resetLink(false)}
+                  <button type="button" aria-label="Zatvori" onClick={close} className="-m-2 p-2 text-neutral-500">
+                    <X size={20} aria-hidden="true" />
+                  </button>
+                </div>
               </div>
               <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-3">{fields}</div>
-              <div className="border-border flex shrink-0 gap-2 border-t p-4">
-                {draftActive > 0 && (
-                  <Button onClick={reset} variant="outline">
-                    Poništi
-                  </Button>
-                )}
+              <div className="border-border shrink-0 border-t p-4">
                 <Button onClick={apply} disabled={pending || count === 0} fullWidth>
                   {pending ? "Tražim…" : applyLabel}
                 </Button>

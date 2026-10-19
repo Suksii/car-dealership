@@ -15,7 +15,7 @@ export default function ActiveFilterChips({ chips, basePath = "/automobili", cla
   return (
     <ul className={className} aria-label="Aktivni filteri">
       {chips.map((c) => (
-        <li key={c.key} className="inline-flex">
+        <li key={c.id} className="inline-flex">
           <Link
             href={href(c.query)}
             aria-label={`Ukloni filter: ${c.label}`}

@@ -15,14 +15,14 @@ export default function SortSelect({
 }: {
   filters: ListingFilters;
   basePath?: string;
-  /** Širina; podrazumijevano w-56. */
+  /** Dodatne klase; širina je w-64, na telefonu se gazi sa flex-1. */
   className?: string;
   size?: "sm" | "md";
 }) {
   const router = useRouter();
   const { startTransition } = useListingsTransition();
   return (
-    <div className={cn(className ?? "w-56")}>
+    <div className={cn("w-64", className)}>
       <Select
         size={size}
         aria-label="Sortiraj"
