@@ -11,7 +11,8 @@ export async function POST(req: Request) {
   const folder = form.get("folder") === "dealers" ? "dealers" : "listings";
   if (!(file instanceof File)) return NextResponse.json({ error: "Nema fajla" }, { status: 400 });
   if (file.size > MAX_IMAGE_BYTES) return NextResponse.json({ error: "Slika je veća od 12 MB" }, { status: 413 });
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return NextResponse.json({ error: "Dozvoljeni su JPG, PNG, WebP i HEIC" }, { status: 415 });
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type))
+    return NextResponse.json({ error: "Dozvoljeni su JPG, PNG, WebP i HEIC" }, { status: 415 });
 
   try {
     const result = await processAndStoreImage(Buffer.from(await file.arrayBuffer()), folder);

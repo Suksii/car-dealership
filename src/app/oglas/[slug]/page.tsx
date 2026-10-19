@@ -33,7 +33,16 @@ export default async function Page({ params }: PageProps<"/oglas/[slug]">) {
   const { slug } = await params;
   if (!(await getListingByPublicId(publicIdFromSlug(slug)))) notFound();
   return (
-    <Suspense fallback={<div className="container-page py-8"><div className="grid gap-8 lg:grid-cols-[1fr_380px]"><Skeleton className="aspect-[4/3] rounded-2xl" /><Skeleton className="h-80 rounded-2xl" /></div></div>}>
+    <Suspense
+      fallback={
+        <div className="container-page py-8">
+          <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+            <Skeleton className="aspect-[4/3] rounded-2xl" />
+            <Skeleton className="h-80 rounded-2xl" />
+          </div>
+        </div>
+      }
+    >
       <ListingDetailPage params={params} />
     </Suspense>
   );

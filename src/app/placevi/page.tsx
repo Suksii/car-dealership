@@ -11,7 +11,18 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="container-page py-8"><Skeleton className="mb-8 h-10 w-72" /><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-22 rounded-2xl" />)}</div></div>}>
+    <Suspense
+      fallback={
+        <div className="container-page py-8">
+          <Skeleton className="mb-8 h-10 w-72" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton key={i} className="h-22 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      }
+    >
       <DealersPage />
     </Suspense>
   );

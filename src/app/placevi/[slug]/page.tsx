@@ -26,7 +26,14 @@ export default async function Page({ params, searchParams }: PageProps<"/placevi
   const { slug } = await params;
   if (!(await getDealerBySlug(slug))) notFound(); // 404 prije Suspense
   return (
-    <Suspense fallback={<div className="container-page py-8"><Skeleton className="mb-8 h-32 rounded-2xl" /><ListingGridSkeleton /></div>}>
+    <Suspense
+      fallback={
+        <div className="container-page py-8">
+          <Skeleton className="mb-8 h-32 rounded-2xl" />
+          <ListingGridSkeleton />
+        </div>
+      }
+    >
       <DealerDetailPage params={params} searchParams={searchParams} />
     </Suspense>
   );

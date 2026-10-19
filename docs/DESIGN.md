@@ -69,7 +69,9 @@ Nova dijeljena komponenta: prvo provjeri `ksport-new/features/shared/components/
 - Forme: labela iznad polja, greška crvenim ispod, obavezna polja sa `*`.
   Custom Select za sve liste; nativni `<select>` se ne koristi.
 - Stanja: svaki dinamični dio ima Suspense fallback istih dimenzija
-  (`Skeleton`), prazna stanja sa jasnom akcijom, greške u tekstu a ne alertu.
+  (`Skeleton`, `ListingGridSkeleton`, `FormSkeleton`, `RowListSkeleton`,
+  `DetailsSkeleton` iz `ui/PageSkeletons.tsx`); tekst „Učitavanje…" kao fallback
+  se ne koristi. Prazna stanja sa jasnom akcijom, greške u tekstu a ne alertu.
 - Pristupačnost: fokus vidljiv (`focus-visible:ring`), ikone `aria-hidden`,
   dugmad samo sa ikonom imaju `aria-label`, kontrast iz tokena.
 - Bez arbitrary vrijednosti u JSX-u; bez `zinc`/`blue`/`gray` klasa — tokeni.

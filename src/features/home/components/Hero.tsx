@@ -32,7 +32,8 @@ export default async function Hero() {
   const { makes, models, cities } = await getCatalog();
   const slimModels = models.map(({ id, makeId, name, slug }) => ({ id, makeId, name, slug }));
   return (
-    <section className="bg-foreground relative isolate overflow-hidden text-white">
+    // Bez overflow-hidden: Select dropdown mora da izađe ispod sekcije; z-10 da bude iznad kartica (relative) niže na stranici.
+    <section className="bg-foreground relative z-10 text-white">
       <Image
         src="/images/hero.jpg"
         alt=""

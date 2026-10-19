@@ -11,10 +11,16 @@ export default function PlacLayout({ children }: LayoutProps<"/plac">) {
   return (
     <div className="container-page flex gap-10 py-8">
       <aside className="hidden w-52 shrink-0 md:block">
-        <p className="eyebrow mb-3 flex items-center gap-2 text-muted"><Car size={14} aria-hidden="true" /> Moj autoplac</p>
+        <p className="eyebrow text-muted mb-3 flex items-center gap-2">
+          <Car size={14} aria-hidden="true" /> Moj autoplac
+        </p>
         <nav className="flex flex-col gap-1" aria-label="Panel navigacija">
           {NAV.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-surface hover:text-accent">
+            <Link
+              key={href}
+              href={href}
+              className="hover:bg-surface hover:text-accent flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+            >
               <Icon size={16} aria-hidden="true" /> {label}
             </Link>
           ))}

@@ -33,22 +33,48 @@
 }
 
 @layer base {
-  html { overflow-x: clip; scrollbar-gutter: stable; }
-  body { overflow-x: clip; background: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); }
-  button { cursor: pointer; }
-  :root { --header-h: 64px; }
+  html {
+    overflow-x: clip;
+    scrollbar-gutter: stable;
+  }
+  body {
+    overflow-x: clip;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  button {
+    cursor: pointer;
+  }
+  :root {
+    --header-h: 64px;
+  }
 }
 
 /* Na telefonu font ispod 16px u poljima izaziva zoom na fokus. */
 @media (pointer: coarse) {
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
-@utility container-page { @apply mx-auto w-full max-w-7xl px-4 sm:px-6; }
-@utility container-narrow { @apply mx-auto w-full max-w-3xl px-4 sm:px-6; }
-@utility container-box { @apply rounded-2xl bg-surface p-5 shadow-card md:p-8; }
-@utility grid-listings { @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4; }
-@utility eyebrow { @apply text-xs font-bold tracking-widest uppercase; }
+@utility container-page {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6;
+}
+@utility container-narrow {
+  @apply mx-auto w-full max-w-3xl px-4 sm:px-6;
+}
+@utility container-box {
+  @apply bg-surface shadow-card rounded-2xl p-5 md:p-8;
+}
+@utility grid-listings {
+  @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+@utility eyebrow {
+  @apply text-xs font-bold tracking-widest uppercase;
+}
 /* Tamni preliv preko hero fotografije: lijevo i dolje tamnije da tekst bude čitljiv. */
 @utility hero-shade {
   background-image:
@@ -59,28 +85,45 @@
 @utility row-scroll {
   @apply -mx-4 flex snap-x gap-3 overflow-x-auto px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:gap-4 lg:overflow-visible lg:px-0;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
-@utility img-fade { @apply bg-gradient-to-t from-black/60 via-black/0 to-black/0; }
+@utility img-fade {
+  @apply bg-gradient-to-t from-black/60 via-black/0 to-black/0;
+}
 
 @utility scrollbar-hide {
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 @utility scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgb(200 200 200 / 0.6) transparent;
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: rgb(200 200 200 / 0.6); border-radius: 9999px; }
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgb(200 200 200 / 0.6);
+    border-radius: 9999px;
+  }
 }
 
 @layer components {
-  .field-label { @apply text-sm font-medium text-foreground; }
+  .field-label {
+    @apply text-foreground text-sm font-medium;
+  }
   .field-control {
-    @apply h-12 w-full rounded-xl border border-border bg-white px-4 text-sm transition-colors outline-none;
-    @apply hover:border-neutral-400 focus:border-foreground focus:ring-2 focus:ring-accent/20;
+    @apply border-border h-12 w-full rounded-xl border bg-white px-4 text-sm transition-colors outline-none;
+    @apply focus:border-foreground focus:ring-accent/20 hover:border-neutral-400 focus:ring-2;
     @apply disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:opacity-60;
   }
-  .field-control-error { @apply border-danger focus:border-danger focus:ring-danger/15; }
-  .card { @apply rounded-2xl border border-border bg-surface shadow-card; }
+  .field-control-error {
+    @apply border-danger focus:border-danger focus:ring-danger/15;
+  }
+  .card {
+    @apply border-border bg-surface shadow-card rounded-2xl border;
+  }
 }

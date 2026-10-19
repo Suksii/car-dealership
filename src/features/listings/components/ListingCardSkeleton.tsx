@@ -1,19 +1,27 @@
 import Skeleton from "@/features/shared/components/ui/Skeleton";
 
+/** Prati raspored ListingCard: slika 4:3, naziv, varijanta, red specifikacija, cijena, plac. */
 export default function ListingCardSkeleton() {
   return (
-    <div className="card overflow-hidden">
+    <div className="bg-surface shadow-card ring-border overflow-hidden rounded-2xl ring-1" aria-hidden="true">
       <Skeleton className="aspect-[4/3] w-full rounded-none" />
-      <div className="flex flex-col gap-3 p-4">
-        <Skeleton className="h-5 w-3/4" />
-        <Skeleton className="h-3 w-1/2" />
-        <div className="grid grid-cols-2 gap-2"><Skeleton className="h-3" /><Skeleton className="h-3" /><Skeleton className="h-3" /><Skeleton className="h-3" /></div>
-        <Skeleton className="h-6 w-1/3" />
+      <div className="flex flex-col gap-2.5 p-4">
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3.5 w-1/2" />
+        <Skeleton className="mt-1 h-3.5 w-5/6" />
+        <Skeleton className="mt-1 h-6 w-1/3" />
+        <Skeleton className="mt-1 h-3 w-3/4" />
       </div>
     </div>
   );
 }
 
 export function ListingGridSkeleton({ count = 8 }: { count?: number }) {
-  return <div className="grid-listings">{Array.from({ length: count }, (_, i) => <ListingCardSkeleton key={i} />)}</div>;
+  return (
+    <div className="grid-listings">
+      {Array.from({ length: count }, (_, i) => (
+        <ListingCardSkeleton key={i} />
+      ))}
+    </div>
+  );
 }
