@@ -10,6 +10,7 @@ import { db } from "@/db";
 import { dealers, users, listings, listingImages, listingFeatures, makes, models } from "@/db/schema";
 import { requireSession, getMyDealer } from "@/lib/dal";
 import { slugify } from "@/lib/utils/slugify";
+import { hoursFromForm } from "@/features/dealers/lib/hours";
 import {
   fieldErrors,
   listingFormToObject,
@@ -36,15 +37,32 @@ const dealerSchema = z.object({
   website: z.string().trim().max(120).optional(),
   description: z.string().trim().max(2000).optional(),
   logo: z.string().optional(),
+  cover: z.string().optional(),
+  lat: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.number().min(-90).max(90).optional()),
+  lng: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.number().min(-180).max(180).optional()),
+  hours_mon: z.string().trim().max(30).optional(),
+  hours_tue: z.string().trim().max(30).optional(),
+  hours_wed: z.string().trim().max(30).optional(),
+  hours_thu: z.string().trim().max(30).optional(),
+  hours_fri: z.string().trim().max(30).optional(),
+  hours_sat: z.string().trim().max(30).optional(),
+  hours_sun: z.string().trim().max(30).optional(),
 });
 
-function dealerValues(d: z.infer<typeof dealerSchema>) {
-  let logoKey: string | null | undefined;
+/** Prvi ključ iz JSON liste ImageUploader-a; undefined = polje nije poslato (ne diraj), null = obrisano. */
+function imageKey(raw: string | undefined): string | null | undefined {
+  if (raw === undefined) return undefined;
   try {
-    logoKey = d.logo ? (JSON.parse(d.logo)[0]?.key ?? null) : null;
+    return JSON.parse(raw)[0]?.key ?? null;
   } catch {
-    logoKey = undefined;
+    return undefined;
   }
+}
+
+function dealerValues(d: z.infer<typeof dealerSchema>) {
+  const logoKey = imageKey(d.logo);
+  const coverKey = imageKey(d.cover);
+  const both = d.lat !== undefined && d.lng !== undefined;
   return {
     name: d.name,
     cityId: d.cityId,
@@ -56,7 +74,11 @@ function dealerValues(d: z.infer<typeof dealerSchema>) {
     email: d.email ?? null,
     website: d.website || null,
     description: d.description || null,
+    workingHours: hoursFromForm((k) => d[k as keyof typeof d] as string | undefined),
+    lat: both ? String(d.lat) : null,
+    lng: both ? String(d.lng) : null,
     ...(logoKey !== undefined ? { logoKey } : {}),
+    ...(coverKey !== undefined ? { coverKey } : {}),
   };
 }
 
@@ -78,13 +100,11 @@ export async function createDealer(_prev: FormState, fd: FormData): Promise<Form
   if (!parsed.success) return { errors: fieldErrors(parsed.error) };
 
   await db.transaction(async (tx) => {
-    await tx
-      .insert(dealers)
-      .values({
-        ...dealerValues(parsed.data),
-        ownerUserId: session.user.id,
-        slug: await uniqueDealerSlug(parsed.data.name),
-      });
+    await tx.insert(dealers).values({
+      ...dealerValues(parsed.data),
+      ownerUserId: session.user.id,
+      slug: await uniqueDealerSlug(parsed.data.name),
+    });
     await tx
       .update(users)
       .set({ role: "dealer" })
@@ -186,17 +206,15 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
       id = row.id;
     }
     if (d.images.length) {
-      await tx
-        .insert(listingImages)
-        .values(
-          d.images.map((img, i) => ({
-            listingId: id!,
-            storageKey: img.key,
-            width: img.width,
-            height: img.height,
-            sortOrder: i,
-          })),
-        );
+      await tx.insert(listingImages).values(
+        d.images.map((img, i) => ({
+          listingId: id!,
+          storageKey: img.key,
+          width: img.width,
+          height: img.height,
+          sortOrder: i,
+        })),
+      );
     }
     if (d.features.length) {
       await tx.insert(listingFeatures).values(d.features.map((featureId) => ({ listingId: id!, featureId })));

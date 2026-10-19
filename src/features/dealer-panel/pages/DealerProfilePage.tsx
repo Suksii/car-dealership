@@ -8,5 +8,8 @@ export default async function DealerProfilePage() {
   const dealer = await requireDealer();
   const { cities } = await getCatalog();
   const logo = dealer.logoKey ? { key: dealer.logoKey, url: imageUrl(dealer.logoKey, "card") } : null;
-  return <DealerForm action={updateDealer} cities={cities} dealer={dealer} logo={logo} submitLabel="Sačuvaj" />;
+  const cover = dealer.coverKey ? { key: dealer.coverKey, url: imageUrl(dealer.coverKey, "card") } : null;
+  return (
+    <DealerForm action={updateDealer} cities={cities} dealer={dealer} logo={logo} cover={cover} submitLabel="Sačuvaj" />
+  );
 }

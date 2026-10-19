@@ -11,6 +11,7 @@ npm run db:migrate       # migracije iz drizzle/
 npm run db:seed          # gradovi, marke, modeli, oprema
 npx tsx scripts/seed-demo.mts          # 3 demo placa + 30 oglasa sa pravim fotografijama (Pexels)
 npx tsx scripts/seed-demo.mts --reset  # obriši demo oglase i slike pa ubaci ponovo
+npx tsx scripts/refresh-stats.mts      # osvježi price_stats (procjena cijene); u produkciji cron jednom dnevno
 npm run dev
 ```
 

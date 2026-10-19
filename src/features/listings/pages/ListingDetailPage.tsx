@@ -20,6 +20,8 @@ import Button from "@/features/shared/components/ui/Button";
 import { formatDate, formatKm, formatPrice, kwToHp } from "@/lib/utils/format";
 import { SITE } from "@/config/site";
 import FavoriteButton from "@/features/favorites/components/FavoriteButton";
+import ReportButton from "@/features/reports/components/ReportButton";
+import PriceEstimate from "@/features/listings/components/PriceEstimate";
 
 export function publicIdFromSlug(slug: string) {
   return slug.slice(slug.lastIndexOf("-") + 1);
@@ -168,6 +170,15 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
                 formatPrice(l.priceEur)
               )}
             </p>
+            {!l.priceOnRequest && !sold && (
+              <PriceEstimate
+                makeId={l.makeId}
+                modelId={l.modelId}
+                year={l.year}
+                priceEur={l.priceEur}
+                modelName={`${l.make.name} ${l.model.name}`}
+              />
+            )}
             <div className="mt-5">
               {sold ? (
                 <p className="text-muted text-sm">Ovaj oglas više nije aktivan.</p>
@@ -180,9 +191,10 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
                 />
               )}
             </div>
-            <p className="text-muted mt-3 text-xs">
-              Objavljeno {formatDate(l.publishedAt, undefined, "–")} · {l.viewsCount} pregleda
-            </p>
+            <div className="text-muted mt-3 flex items-center justify-between gap-3 text-xs">
+              <p>{`Objavljeno ${formatDate(l.publishedAt, undefined, "–")} · ${l.viewsCount} pregleda`}</p>
+              <ReportButton listingId={l.id} />
+            </div>
           </div>
 
           <div className="card p-5">

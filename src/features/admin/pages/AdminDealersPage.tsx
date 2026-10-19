@@ -18,11 +18,12 @@ export default async function AdminDealersPage() {
   return (
     <>
       <h1 className="text-2xl font-bold tracking-tight">Placevi</h1>
-      <dl className="mt-4 mb-8 grid grid-cols-3 gap-3">
+      <dl className="mt-4 mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           [stats.pendingDealers, "čeka odobrenje"],
           [stats.activeListings, "aktivnih oglasa"],
           [stats.contactClicks7d, "kontakata u 7 dana"],
+          [stats.openReports, "otvorenih prijava"],
         ].map(([n, label]) => (
           <div key={label} className="card p-4">
             <dd className="text-2xl font-extrabold tracking-tight">{n}</dd>

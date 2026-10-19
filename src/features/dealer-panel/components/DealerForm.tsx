@@ -7,6 +7,7 @@ import SelectField from "@/features/shared/components/ui/SelectField";
 import ImageUploader, { type UploadedImage } from "@/features/dealer-panel/components/ImageUploader";
 import type { FormState } from "@/features/dealer-panel/actions";
 import type { Dealer } from "@/db/schema";
+import { DAYS } from "@/features/dealers/lib/hours";
 
 type City = { id: number; name: string };
 
@@ -15,10 +16,11 @@ interface Props {
   cities: City[];
   dealer?: Dealer | null;
   logo?: UploadedImage | null;
+  cover?: UploadedImage | null;
   submitLabel: string;
 }
 
-export default function DealerForm({ action, cities, dealer, logo, submitLabel }: Props) {
+export default function DealerForm({ action, cities, dealer, logo, cover, submitLabel }: Props) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, undefined);
   const e = state?.errors ?? {};
   const cityOptions = cities.map((c) => ({ value: String(c.id), label: c.name }));
@@ -76,12 +78,57 @@ export default function DealerForm({ action, cities, dealer, logo, submitLabel }
         label="O placu"
         name="description"
         defaultValue={dealer?.description ?? ""}
-        hint="Kratak opis, radno vrijeme, šta nudite"
+        hint="Kratak opis: šta nudite, kredit, zamjena, uvoz"
         error={e.description}
       />
-      <FieldWrap label="Logo">
-        <ImageUploader name="logo" folder="dealers" single initial={logo ? [logo] : []} />
-      </FieldWrap>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FieldWrap label="Logo" hint="Kvadrat, npr. 400×400">
+          <ImageUploader name="logo" folder="dealers" single initial={logo ? [logo] : []} />
+        </FieldWrap>
+        <FieldWrap label="Naslovna fotografija" hint="Široka slika placa, ide na vrh stranice (npr. 1600×500)">
+          <ImageUploader name="cover" folder="dealers" single initial={cover ? [cover] : []} />
+        </FieldWrap>
+      </div>
+      <fieldset>
+        <legend className="field-label">Radno vrijeme</legend>
+        <p className="text-muted mt-1 mb-3 text-xs">
+          Npr. „08:00–20:00“. Prazno = zatvoreno. Ako ne uneseš ništa, radno vrijeme se ne prikazuje.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {DAYS.map(([key, label]) => (
+            <Field
+              key={key}
+              label={label}
+              name={`hours_${key}`}
+              defaultValue={dealer?.workingHours?.[key] ?? ""}
+              placeholder="08:00–16:00"
+            />
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend className="field-label">Lokacija na mapi</legend>
+        <p className="text-muted mt-1 mb-3 text-xs">
+          U Google mapama desni klik na plac → prva stavka su koordinate (npr. 42.44, 19.26). Prikazuje mapu na stranici
+          placa.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Geografska širina (lat)"
+            name="lat"
+            inputMode="decimal"
+            defaultValue={dealer?.lat ?? ""}
+            error={e.lat}
+          />
+          <Field
+            label="Geografska dužina (lng)"
+            name="lng"
+            inputMode="decimal"
+            defaultValue={dealer?.lng ?? ""}
+            error={e.lng}
+          />
+        </div>
+      </fieldset>
       {state?.message && <p className="text-success text-sm">{state.message}</p>}
       <div>
         <SubmitButton pending={pending}>{submitLabel}</SubmitButton>

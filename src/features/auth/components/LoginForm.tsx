@@ -15,22 +15,35 @@ export default function LoginForm({ googleEnabled }: { googleEnabled: boolean })
       <form action={action} className="flex flex-col gap-4">
         <input type="hidden" name="next" value={next} />
         <Field label="Email" name="email" type="email" autoComplete="email" required error={state?.errors?.email} />
-        <Field label="Lozinka" name="password" type="password" autoComplete="current-password" required error={state?.errors?.password} />
-        {state?.message && <p className="text-sm text-danger">{state.message}</p>}
+        <Field
+          label="Lozinka"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          error={state?.errors?.password}
+        />
+        {state?.message && <p className="text-danger text-sm">{state.message}</p>}
         <SubmitButton pending={pending}>Prijavi se</SubmitButton>
       </form>
 
       {googleEnabled && (
         <form action={loginWithGoogle}>
           <input type="hidden" name="next" value={next} />
-          <button type="submit" className="h-11 w-full rounded-full border border-border bg-white text-sm font-semibold transition-colors hover:border-foreground">
+          <button
+            type="submit"
+            className="border-border hover:border-foreground h-11 w-full rounded-full border bg-white text-sm font-semibold transition-colors"
+          >
             Nastavi sa Google nalogom
           </button>
         </form>
       )}
 
-      <p className="text-sm text-muted">
-        Nemaš nalog? <Link href="/registracija" className="font-medium text-accent hover:underline">Registruj se</Link>
+      <p className="text-muted text-sm">
+        Nemaš nalog?{" "}
+        <Link href="/registracija" className="text-accent font-medium hover:underline">
+          Registruj se
+        </Link>
       </p>
     </div>
   );

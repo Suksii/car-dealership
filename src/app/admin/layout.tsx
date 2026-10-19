@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Car, ShieldCheck, Store } from "lucide-react";
+import { Car, Flag, ShieldCheck, Store } from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Placevi", icon: Store },
   { href: "/admin/oglasi", label: "Oglasi", icon: Car },
+  { href: "/admin/prijave", label: "Prijave", icon: Flag },
 ];
 
 export default function AdminLayout({ children }: LayoutProps<"/admin">) {

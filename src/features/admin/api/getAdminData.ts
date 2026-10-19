@@ -1,6 +1,6 @@
 import { and, count, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { contactClicks, dealers, listings, users } from "@/db/schema";
+import { contactClicks, dealers, listings, reports, users } from "@/db/schema";
 import { imageUrl } from "@/lib/images";
 
 /** Admin podaci se ne keširaju: uvijek svježe, čita se samo poslije requireAdmin(). */
@@ -10,7 +10,8 @@ export async function getAdminStats() {
   const [active] = await db.select({ n: count() }).from(listings).where(eq(listings.status, "active"));
   const since = new Date(Date.now() - 7 * 86400_000);
   const [clicks] = await db.select({ n: count() }).from(contactClicks).where(gte(contactClicks.createdAt, since));
-  return { pendingDealers: pending.n, activeListings: active.n, contactClicks7d: clicks.n };
+  const [open] = await db.select({ n: count() }).from(reports).where(eq(reports.status, "open"));
+  return { pendingDealers: pending.n, activeListings: active.n, contactClicks7d: clicks.n, openReports: open.n };
 }
 
 export async function getDealersForAdmin() {
@@ -67,5 +68,36 @@ export async function getListingsForAdmin(limit = 60) {
     createdAt: l.createdAt.toISOString(),
     dealer: l.dealer,
     thumb: l.images[0] ? imageUrl(l.images[0].storageKey, "thumb") : null,
+  }));
+}
+
+/** Prijave: otvorene prve, pa zadnjih 30 riješenih. */
+export async function getReportsForAdmin() {
+  const rows = await db.query.reports.findMany({
+    orderBy: [sql`CASE ${reports.status} WHEN 'open' THEN 0 ELSE 1 END`, desc(reports.createdAt)],
+    limit: 80,
+    with: {
+      listing: {
+        columns: { id: true, slug: true, publicId: true, status: true, variant: true },
+        with: { make: true, model: true, dealer: { columns: { name: true } } },
+      },
+      reporter: { columns: { email: true } },
+    },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    reason: r.reason,
+    message: r.message,
+    status: r.status,
+    createdAt: r.createdAt.toISOString(),
+    reporterEmail: r.reporter?.email ?? null,
+    listing: {
+      id: r.listing.id,
+      slug: r.listing.slug,
+      publicId: r.listing.publicId,
+      status: r.listing.status,
+      title: `${r.listing.make.name} ${r.listing.model.name}${r.listing.variant ? ` ${r.listing.variant}` : ""}`,
+      dealerName: r.listing.dealer?.name ?? "—",
+    },
   }));
 }

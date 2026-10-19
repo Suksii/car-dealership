@@ -14,7 +14,10 @@ export function imageUrl(key: string, size: ImageSize): string {
 }
 
 /** Obradi upload: tri WebP veličine, vrati osnovni ključ i dimenzije originala. */
-export async function processAndStoreImage(input: Buffer, folder: "listings" | "dealers"): Promise<{ key: string; width: number; height: number }> {
+export async function processAndStoreImage(
+  input: Buffer,
+  folder: "listings" | "dealers",
+): Promise<{ key: string; width: number; height: number }> {
   const base = sharp(input, { failOn: "none" }).rotate(); // rotate() poštuje EXIF orijentaciju sa telefona
   const meta = await base.metadata();
   if (!meta.width || !meta.height) throw new Error("Neispravna slika");
@@ -24,7 +27,8 @@ export async function processAndStoreImage(input: Buffer, folder: "listings" | "
 
   await Promise.all(
     (Object.keys(IMAGE_SIZES) as ImageSize[]).map(async (size) => {
-      const buf = await base.clone()
+      const buf = await base
+        .clone()
         .resize({ width: IMAGE_SIZES[size], withoutEnlargement: true })
         .webp({ quality: size === "thumb" ? 72 : 80 })
         .toBuffer();

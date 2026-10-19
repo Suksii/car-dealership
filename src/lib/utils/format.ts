@@ -18,7 +18,11 @@ export function kwToHp(kw: number): number {
 const DEFAULT_DATE: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
 
 /** Lokalizovan datum. Vraća `fallback` za prazne/nevalidne vrijednosti. */
-export function formatDate(value: string | number | Date | null | undefined, options = DEFAULT_DATE, fallback = ""): string {
+export function formatDate(
+  value: string | number | Date | null | undefined,
+  options = DEFAULT_DATE,
+  fallback = "",
+): string {
   if (value == null || value === "") return fallback;
   const d = value instanceof Date ? value : new Date(value);
   return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString(LOCALE, options);

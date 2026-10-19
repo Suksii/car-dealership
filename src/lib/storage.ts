@@ -35,10 +35,15 @@ function r2Storage(): Storage {
   });
   return {
     async put(key, body, contentType) {
-      await client.send(new PutObjectCommand({
-        Bucket: R2_BUCKET, Key: key, Body: body, ContentType: contentType,
-        CacheControl: "public, max-age=31536000, immutable",
-      }));
+      await client.send(
+        new PutObjectCommand({
+          Bucket: R2_BUCKET,
+          Key: key,
+          Body: body,
+          ContentType: contentType,
+          CacheControl: "public, max-age=31536000, immutable",
+        }),
+      );
     },
     async remove(key) {
       await client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key }));

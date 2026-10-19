@@ -70,6 +70,14 @@ na `/api/upload` odmah pri izboru fajla, forma šalje samo ključeve.
 poslije nove rute; tabela ruta mora ostati `○`/`◐` (statična ljuska), `ƒ` samo
 za `/api/*` i `/uploads/*`.
 
+## Procjena cijene
+
+`price_stats` je materijalizovani view (medijan i kvartili po marka/model/godište,
+samo aktivni oglasi sa cijenom). `getPriceStat` (`use cache`, `hours`) prvo
+traži tačno godište, pa ±1; prikazuje se tek od 3 uporediva oglasa
+(`PriceEstimate` na oglasu). Osvježavanje: `scripts/refresh-stats.mts`, u
+produkciji cron jednom dnevno.
+
 ## SEO
 
 - `src/app/robots.ts` (zabranjeni `/plac`, `/nalog`, `/admin`, `/api`, auth

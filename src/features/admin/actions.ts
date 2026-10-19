@@ -4,7 +4,7 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { revalidatePath, updateTag } from "next/cache";
 import { db } from "@/db";
-import { dealers, listings } from "@/db/schema";
+import { dealers, listings, reports } from "@/db/schema";
 import { requireAdmin } from "@/lib/dal";
 import { LISTINGS_TAG } from "@/features/listings/api/getListings";
 import { DEALERS_TAG } from "@/features/dealers/api/getDealers";
@@ -44,4 +44,13 @@ export async function removeListingByAdmin(listingId: string) {
     .set({ status: "removed" })
     .where(eq(listings.id, uuid.parse(listingId)));
   invalidate();
+}
+
+export async function setReportStatus(reportId: string, status: "resolved" | "dismissed") {
+  await requireAdmin();
+  await db
+    .update(reports)
+    .set({ status: z.enum(["resolved", "dismissed"]).parse(status) })
+    .where(eq(reports.id, uuid.parse(reportId)));
+  revalidatePath("/admin", "layout");
 }
