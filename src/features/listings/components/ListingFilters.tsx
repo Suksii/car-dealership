@@ -8,7 +8,7 @@ import Select from "@/features/shared/components/ui/Select";
 import Button from "@/features/shared/components/ui/Button";
 import { FieldWrap } from "@/features/shared/components/ui/Field";
 import { FUEL, TRANSMISSION, BODY } from "@/features/listings/lib/labels";
-import { filtersToQuery, countActiveFilters } from "@/features/listings/lib/filters";
+import { filtersToQuery, countActiveFilters, PRICE_STEPS, KM_STEPS } from "@/features/listings/lib/filters";
 import { loadModels, loadListingCount } from "@/features/listings/catalog-actions";
 import { useListingsTransition } from "@/features/listings/components/ListingsTransition";
 import type { SlimModel } from "@/features/listings/api/getModels";
@@ -44,11 +44,11 @@ const YEARS = Array.from({ length: CURRENT_YEAR - 1989 }, (_, i) => String(CURRE
   value: y,
   label: y,
 }));
-const PRICES = [2000, 3000, 5000, 8000, 10000, 15000, 20000, 30000, 50000, 80000].map((p) => ({
+const PRICES = PRICE_STEPS.map((p) => ({
   value: String(p),
   label: `${p.toLocaleString("sr-Latn-ME")} €`,
 }));
-const KMS = [50000, 100000, 150000, 200000, 250000, 300000].map((k) => ({
+const KMS = KM_STEPS.map((k) => ({
   value: String(k),
   label: `do ${k.toLocaleString("sr-Latn-ME")} km`,
 }));
@@ -174,6 +174,7 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
             value={s(f.priceMin)}
             onChange={set("priceMin")}
             placeholder="Od"
+            searchable
             clearable
             size="sm"
           />
@@ -185,6 +186,7 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
             value={s(f.priceMax)}
             onChange={set("priceMax")}
             placeholder="Do"
+            searchable
             clearable
             size="sm"
           />
@@ -221,6 +223,7 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
           value={s(f.kmMax)}
           onChange={set("kmMax")}
           placeholder="Bilo koja"
+          searchable
           clearable
           size="sm"
         />

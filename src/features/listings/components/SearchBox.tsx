@@ -2,14 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PRICE_STEPS } from "@/features/listings/lib/filters";
 import { Search } from "lucide-react";
 import Select from "@/features/shared/components/ui/Select";
 import Button from "@/features/shared/components/ui/Button";
 import { loadModels } from "@/features/listings/catalog-actions";
 import type { SlimModel } from "@/features/listings/api/getModels";
 import type { Catalog } from "@/lib/catalog";
-
-const PRICE_STEPS = [3000, 5000, 8000, 10000, 15000, 20000, 30000, 50000];
 
 type Props = { makes: Catalog["makes"]; cities: Catalog["cities"] };
 
@@ -83,6 +82,7 @@ export default function SearchBox({ makes, cities }: Props) {
         value={price}
         onChange={setPrice}
         placeholder="Cijena do"
+        searchable
         clearable
       />
       <Select

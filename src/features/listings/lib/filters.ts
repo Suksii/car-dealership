@@ -30,6 +30,14 @@ const manyOf = <T extends string>(v: string | string[] | undefined, keys: readon
   return arr?.length ? arr : undefined;
 };
 
+/** Koraci za cijenu i kilometražu u filterima i pretrazi na naslovnoj; gušći tamo gdje su najčešće granice. */
+export const PRICE_STEPS = [
+  1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 10000, 12000, 15000, 20000, 25000, 30000, 40000, 50000, 70000, 100000,
+] as const;
+export const KM_STEPS = [
+  10000, 25000, 50000, 75000, 100000, 125000, 150000, 175000, 200000, 250000, 300000, 400000,
+] as const;
+
 export const SORT_OPTIONS = [
   { value: "newest", label: "Najnovije" },
   { value: "price_asc", label: "Cijena: niža prvo" },
