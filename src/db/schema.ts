@@ -367,6 +367,22 @@ export const reports = pgTable(
 // ---------------------------------------------------------------------
 // RELACIJE (za db.query.* API)
 // ---------------------------------------------------------------------
+/** Jednokratni tokeni za „zaboravljena lozinka"; čuva se samo SHA-256 hash, nikad sam token. */
+export const passwordResetTokens = pgTable(
+  "password_reset_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("password_reset_tokens_user_idx").on(t.userId)],
+);
+
 export const makesRelations = relations(makes, ({ many }) => ({ models: many(models) }));
 export const modelsRelations = relations(models, ({ one }) => ({
   make: one(makes, { fields: [models.makeId], references: [makes.id] }),

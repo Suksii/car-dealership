@@ -9,10 +9,17 @@ import { GoogleIcon } from "@/features/shared/components/ui/BrandIcons";
 
 export default function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(login, undefined);
-  const next = useSearchParams().get("next") ?? "/nalog";
+  const params = useSearchParams();
+  const next = params.get("next") ?? "/nalog";
+  const passwordChanged = params.get("lozinka") === "nova";
 
   return (
     <div className="flex flex-col gap-6">
+      {passwordChanged && (
+        <p role="status" className="bg-success/10 text-success rounded-xl p-4 text-sm font-medium">
+          Lozinka je promijenjena. Prijavi se novom lozinkom.
+        </p>
+      )}
       {googleEnabled && (
         <>
           <form action={loginWithGoogle}>
@@ -44,6 +51,12 @@ export default function LoginForm({ googleEnabled }: { googleEnabled: boolean })
           required
           error={state?.errors?.password}
         />
+        <Link
+          href="/zaboravljena-lozinka"
+          className="text-muted hover:text-foreground -mt-1 self-end text-sm font-medium"
+        >
+          Zaboravljena lozinka?
+        </Link>
         {state?.message && <p className="text-danger text-sm">{state.message}</p>}
         <SubmitButton pending={pending} className="mt-1 w-full">
           Prijavi se

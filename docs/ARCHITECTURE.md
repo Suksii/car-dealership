@@ -116,3 +116,21 @@ produkciji cron jednom dnevno.
 | `scripts/refresh-stats.mts`   | dnevno 04:00 | `REFRESH MATERIALIZED VIEW price_stats`                     |
 
 Javne liste i bez crona ne prikazuju istekle oglase (`expires_at > now()` u upitu).
+
+## Email
+
+`src/lib/email/send.ts` šalje preko Resend API-ja (jedan `fetch`, bez SDK-a).
+Bez `RESEND_API_KEY` se lokalno poruka upisuje u `storage/dev-mail/*.html`
+(otvori u browseru), a u produkciji se ne šalje i greška se bilježi. `sendEmail`
+nikad ne baca; pozivalac odlučuje šta radi sa neuspjehom. Šabloni su u
+`src/lib/email/templates.ts` (inline stilovi, sav korisnički tekst kroz `escapeHtml`).
+
+- **Zaboravljena lozinka:** `/zaboravljena-lozinka` → token od 256 bita, u bazi
+  samo SHA-256 hash (`password_reset_tokens`), važi 60 min, jednokratan, važi samo
+  posljednji. Isti odgovor bez obzira da li nalog postoji. Limit 3/h po emailu i
+  10/h po IP-u, plus limit u `proxy.ts`. `/nova-lozinka?token=` mijenja lozinku i
+  briše sve tokene korisnika. JWT sesije na drugim uređajima ostaju važeće do isteka.
+- **Obavještenja adminu** (`ADMIN_EMAIL`, podrazumijevano `SITE.email`): novi plac
+  čeka odobrenje, nova prijava oglasa. Neuspjeh slanja ne obara radnju.
+- Produkcija: domen pošiljaoca (`EMAIL_FROM`) mora biti potvrđen u Resend-u
+  (SPF i DKIM DNS zapisi).

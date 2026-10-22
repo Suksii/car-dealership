@@ -11,6 +11,8 @@ const protectedPrefixes = ["/nalog", "/plac", "/admin"];
 const LIMITS: Record<string, [limit: number, windowMs: number]> = {
   "/prijava": [10, 10 * 60_000],
   "/registracija": [5, 60 * 60_000],
+  "/zaboravljena-lozinka": [5, 60 * 60_000],
+  "/nova-lozinka": [10, 60 * 60_000],
   "/api/upload": [60, 10 * 60_000],
 };
 

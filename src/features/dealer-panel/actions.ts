@@ -7,7 +7,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { LISTINGS_TAG } from "@/features/listings/api/getListings";
 import { DEALERS_TAG } from "@/features/dealers/api/getDealers";
 import { db } from "@/db";
-import { dealers, users, listings, listingImages, listingFeatures, makes, models } from "@/db/schema";
+import { dealers, users, listings, listingImages, listingFeatures, makes, models, cities } from "@/db/schema";
 import { requireSession, getMyDealer } from "@/lib/dal";
 import { slugify } from "@/lib/utils/slugify";
 import { deleteImage } from "@/lib/images";
@@ -15,6 +15,8 @@ import { IMAGE_KEY } from "@/features/listings/lib/listing";
 import { hoursFromForm } from "@/features/dealers/lib/hours";
 import { normalizeTaxId } from "@/features/dealers/lib/taxId";
 import { nextPreviousPrice } from "@/features/listings/lib/price";
+import { ADMIN_EMAIL, sendEmail } from "@/lib/email/send";
+import { newDealerEmail } from "@/lib/email/templates";
 import {
   fieldErrors,
   listingFormToObject,
@@ -131,6 +133,18 @@ export async function createDealer(_prev: FormState, fd: FormData): Promise<Form
       .update(users)
       .set({ role: "dealer" })
       .where(and(eq(users.id, session.user.id), eq(users.role, "private")));
+  });
+  // Obavještenje adminu da plac čeka odobrenje; neuspjeh slanja ne obara registraciju.
+  const city = await db.query.cities.findFirst({ where: eq(cities.id, parsed.data.cityId), columns: { name: true } });
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    ...newDealerEmail({
+      name: parsed.data.name,
+      city: city?.name ?? "",
+      phone: parsed.data.phone,
+      ownerEmail: session.user.email ?? "",
+      taxId,
+    }),
   });
   redirect("/plac");
 }

@@ -43,6 +43,13 @@
       "when": 1792690061255,
       "tag": "0005_dealer_tax_id",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792705746249,
+      "tag": "0006_password_reset_tokens",
+      "breakpoints": true
     }
   ]
 }

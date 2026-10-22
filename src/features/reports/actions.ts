@@ -9,6 +9,10 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { listings, reports } from "@/db/schema";
 import { REPORT_REASON } from "@/features/reports/lib/labels";
+import { listingPath, listingTitle } from "@/features/listings/lib/listing";
+import { SITE } from "@/config/site";
+import { ADMIN_EMAIL, sendEmail } from "@/lib/email/send";
+import { newReportEmail } from "@/lib/email/templates";
 
 export type ReportState = { errors?: Record<string, string>; message?: string; done?: boolean } | undefined;
 
@@ -30,7 +34,8 @@ export async function reportListing(listingId: string, _prev: ReportState, fd: F
 
   const listing = await db.query.listings.findFirst({
     where: eq(listings.id, parsedId.data),
-    columns: { id: true, status: true },
+    columns: { id: true, status: true, slug: true, publicId: true, variant: true, year: true },
+    with: { make: { columns: { name: true } }, model: { columns: { name: true } } },
   });
   if (!listing || listing.status !== "active") return { message: "Oglas nije pronađen." };
 
@@ -50,6 +55,16 @@ export async function reportListing(listingId: string, _prev: ReportState, fd: F
     reporterUserId: session?.user.id ?? null,
     reason: parsed.data.reason,
     message: parsed.data.message || null,
+  });
+  // Obavještenje adminu; neuspjeh slanja ne obara prijavu (sendEmail sam bilježi grešku).
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    ...newReportEmail({
+      listingTitle: `${listingTitle(listing.make.name, listing.model.name, listing.variant)} ${listing.year}`,
+      listingUrl: `${SITE.url}${listingPath(listing.slug, listing.publicId)}`,
+      reason: REPORT_REASON[parsed.data.reason],
+      message: parsed.data.message || null,
+    }),
   });
   return { done: true, message: "Hvala, pogledaćemo oglas." };
 }
