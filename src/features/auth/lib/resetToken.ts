@@ -2,6 +2,8 @@ import { createHash, randomBytes } from "node:crypto";
 
 /** Koliko dugo važi link za novu lozinku. */
 export const RESET_TOKEN_MINUTES = 60;
+/** Koliko dugo važi link za potvrdu emaila. Isti oblik tokena i hash kao za lozinku. */
+export const VERIFY_TOKEN_HOURS = 24;
 
 /** Nasumičan token za link (256 bita, URL-bezbjedan). U bazu ide samo hash. */
 export function newResetToken(): string {

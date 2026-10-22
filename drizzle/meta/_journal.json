@@ -50,6 +50,13 @@
       "when": 1792705746249,
       "tag": "0006_password_reset_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792707141692,
+      "tag": "0007_email_verification",
+      "breakpoints": true
     }
   ]
 }

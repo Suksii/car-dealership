@@ -383,6 +383,21 @@ export const passwordResetTokens = pgTable(
   (t) => [index("password_reset_tokens_user_idx").on(t.userId)],
 );
 
+/** Jednokratni tokeni za potvrdu email adrese poslije registracije (čuva se samo SHA-256 hash). */
+export const emailVerificationTokens = pgTable(
+  "email_verification_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("email_verification_tokens_user_idx").on(t.userId)],
+);
+
 export const makesRelations = relations(makes, ({ many }) => ({ models: many(models) }));
 export const modelsRelations = relations(models, ({ one }) => ({
   make: one(makes, { fields: [models.makeId], references: [makes.id] }),

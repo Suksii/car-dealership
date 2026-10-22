@@ -130,6 +130,12 @@ nikad ne baca; pozivalac odlučuje šta radi sa neuspjehom. Šabloni su u
   posljednji. Isti odgovor bez obzira da li nalog postoji. Limit 3/h po emailu i
   10/h po IP-u, plus limit u `proxy.ts`. `/nova-lozinka?token=` mijenja lozinku i
   briše sve tokene korisnika. JWT sesije na drugim uređajima ostaju važeće do isteka.
+- **Potvrda emaila:** poslije registracije stiže link `/potvrda-emaila?token=`
+  (`email_verification_tokens`, važi 24 h, isti oblik i hash tokena kao za lozinku).
+  Potvrda je dugme (POST), ne otvaranje linka, jer skeneri emaila otvaraju linkove.
+  Kupac može sve osim registracije placa; `/nalog` i `/plac/registracija` prikazuju
+  traku „Potvrdi email" sa „Pošalji ponovo" (3/h). Google prijava se računa kao
+  potvrđena. Nalozi stariji od uvođenja (migracija 0007) su označeni kao potvrđeni.
 - **Obavještenja adminu** (`ADMIN_EMAIL`, podrazumijevano `SITE.email`): novi plac
   čeka odobrenje, nova prijava oglasa. Neuspjeh slanja ne obara radnju.
 - Produkcija: domen pošiljaoca (`EMAIL_FROM`) mora biti potvrđen u Resend-u

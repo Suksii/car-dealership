@@ -13,6 +13,7 @@ const LIMITS: Record<string, [limit: number, windowMs: number]> = {
   "/registracija": [5, 60 * 60_000],
   "/zaboravljena-lozinka": [5, 60 * 60_000],
   "/nova-lozinka": [10, 60 * 60_000],
+  "/potvrda-emaila": [10, 60 * 60_000],
   "/api/upload": [60, 10 * 60_000],
 };
 

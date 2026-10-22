@@ -8,12 +8,19 @@ import { headers } from "next/headers";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { users, passwordResetTokens } from "@/db/schema";
+import { users, passwordResetTokens, emailVerificationTokens } from "@/db/schema";
 import { SITE } from "@/config/site";
 import { sendEmail } from "@/lib/email/send";
-import { passwordResetEmail } from "@/lib/email/templates";
+import { passwordResetEmail, verifyEmailEmail } from "@/lib/email/templates";
+import { requireSession } from "@/lib/dal";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { RESET_TOKEN_MINUTES, hashResetToken, isWellFormedToken, newResetToken } from "@/features/auth/lib/resetToken";
+import {
+  RESET_TOKEN_MINUTES,
+  VERIFY_TOKEN_HOURS,
+  hashResetToken,
+  isWellFormedToken,
+  newResetToken,
+} from "@/features/auth/lib/resetToken";
 import { signIn } from "@/auth";
 
 export type FormState = { errors?: Record<string, string>; message?: string } | undefined;
@@ -49,7 +56,12 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   if (existing) return { errors: { email: "Nalog sa ovim emailom već postoji" } };
 
   const passwordHash = await bcrypt.hash(password, 10);
-  await db.insert(users).values({ name, email, phone, passwordHash, termsAcceptedAt: new Date() });
+  const [created] = await db
+    .insert(users)
+    .values({ name, email, phone, passwordHash, termsAcceptedAt: new Date() })
+    .returning({ id: users.id });
+  // Neuspjelo slanje ne obara registraciju: korisnik može zatražiti novi link sa stranice naloga.
+  await sendVerification(created.id, email, name);
 
   await signIn("credentials", { email, password, redirectTo: "/nalog" });
 }
@@ -153,4 +165,57 @@ export async function resetPassword(_prev: FormState, formData: FormData): Promi
   });
   if (!updated) return { message: RESET_INVALID };
   redirect("/prijava?lozinka=nova");
+}
+
+// ---------------- potvrda emaila ----------------
+/** Novi link za potvrdu (stari se brišu) i email. Vraća da li je email poslat. */
+async function sendVerification(userId: string, email: string, name: string): Promise<boolean> {
+  const token = newResetToken();
+  await db.transaction(async (tx) => {
+    await tx.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, userId));
+    await tx.insert(emailVerificationTokens).values({
+      userId,
+      tokenHash: hashResetToken(token),
+      expiresAt: new Date(Date.now() + VERIFY_TOKEN_HOURS * 3600_000),
+    });
+  });
+  const link = `${SITE.url}/potvrda-emaila?token=${token}`;
+  const sent = await sendEmail({ to: email, ...verifyEmailEmail(name, link, VERIFY_TOKEN_HOURS) });
+  return sent.ok;
+}
+
+/** Dugme „Pošalji ponovo" na stranici naloga i registracije placa. */
+export async function resendVerification(): Promise<FormState> {
+  const { user } = await requireSession("/nalog");
+  if (user.emailVerified) return { message: "Email je već potvrđen." };
+  if (!rateLimit(`verify-resend:${user.id}`, 3, 3600_000).ok)
+    return { message: "Link je već poslat nekoliko puta. Provjeri inbox i spam, ili pokušaj za sat vremena." };
+  const ok = await sendVerification(user.id, user.email!, user.name ?? "");
+  return {
+    message: ok
+      ? `Poslali smo novi link na ${user.email}.`
+      : "Slanje emaila trenutno ne radi. Pokušaj ponovo za par minuta.",
+  };
+}
+
+const VERIFY_INVALID =
+  "Link za potvrdu je istekao ili je već iskorišćen. Prijavi se i zatraži novi na stranici naloga.";
+
+/** Potvrda ide preko dugmeta (POST), ne pri otvaranju linka: skeneri emaila otvaraju linkove i potrošili bi token. */
+export async function confirmEmail(_prev: FormState, formData: FormData): Promise<FormState> {
+  const token = formData.get("token");
+  if (!isWellFormedToken(token)) return { message: VERIFY_INVALID };
+  const now = new Date();
+  const row = await db.query.emailVerificationTokens.findFirst({
+    where: and(
+      eq(emailVerificationTokens.tokenHash, hashResetToken(token)),
+      gt(emailVerificationTokens.expiresAt, now),
+    ),
+  });
+  if (!row) return { message: VERIFY_INVALID };
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ emailVerifiedAt: now, updatedAt: now }).where(eq(users.id, row.userId));
+    await tx.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, row.userId));
+  });
+  redirect("/nalog?email=potvrdjen");
 }

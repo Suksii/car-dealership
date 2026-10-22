@@ -114,6 +114,8 @@ async function uniqueDealerSlug(name: string) {
 export async function createDealer(_prev: FormState, fd: FormData): Promise<FormState> {
   const session = await requireSession("/plac/registracija");
   if (await getMyDealer()) redirect("/plac");
+  if (!session.user.emailVerified)
+    return { message: "Prvo potvrdi email adresu (link je u emailu poslije registracije)." };
 
   const parsed = dealerSchema.safeParse(Object.fromEntries(fd));
   if (!parsed.success) return { errors: fieldErrors(parsed.error) };

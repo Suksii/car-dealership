@@ -56,7 +56,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         .insert(accounts)
         .values({ userId: dbUser.id, provider: "google", providerAccountId: account.providerAccountId })
         .onConflictDoNothing();
-      await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, dbUser.id));
+      // Google je potvrdio email (provjereno gore), pa se računa i kao naša potvrda.
+      await db
+        .update(users)
+        .set({ lastLoginAt: new Date(), emailVerifiedAt: dbUser.emailVerifiedAt ?? new Date() })
+        .where(eq(users.id, dbUser.id));
 
       user.id = dbUser.id;
       user.role = dbUser.role;

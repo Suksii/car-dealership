@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { escapeHtml, passwordResetEmail, newReportEmail } from "./templates";
+import { escapeHtml, passwordResetEmail, newReportEmail, verifyEmailEmail } from "./templates";
 
 describe("email šabloni", () => {
   it("escapeHtml neutrališe HTML iz korisničkog unosa", () => {
@@ -20,5 +20,14 @@ describe("email šabloni", () => {
       message: "<img src=x>",
     });
     expect(m.html).not.toContain("<img src=x>");
+  });
+
+  it("dugme ima i tekstualni link, a pregled u inboxu je postavljen", () => {
+    const m = verifyEmailEmail("Ana", "https://autivo.me/potvrda-emaila?token=xyz", 24);
+    // href dugmeta, href tekstualnog linka i sam tekst linka
+    expect(m.html.match(/potvrda-emaila\?token=xyz/g)?.length).toBe(3);
+    expect(m.html).toContain("Ako dugme ne radi");
+    expect(m.html).toContain("Još jedan klik");
+    expect(m.text).toContain("https://autivo.me/potvrda-emaila?token=xyz");
   });
 });

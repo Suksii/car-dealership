@@ -14,10 +14,10 @@ export const requireSession = cache(async (next = "/nalog") => {
   // Uloga i blokada se čitaju iz baze (JWT traje 30 dana): promjena uloge ili blokada važe odmah.
   const fresh = await db.query.users.findFirst({
     where: eq(users.id, session.user.id),
-    columns: { role: true, isBlocked: true },
+    columns: { role: true, isBlocked: true, emailVerifiedAt: true },
   });
   if (!fresh || fresh.isBlocked) redirect("/prijava?blokiran=1");
-  return { ...session, user: { ...session.user, role: fresh.role } };
+  return { ...session, user: { ...session.user, role: fresh.role, emailVerified: !!fresh.emailVerifiedAt } };
 });
 
 /** Plac prijavljenog korisnika (vlasnik ili član), ili null. */
