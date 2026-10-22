@@ -15,6 +15,7 @@ export interface DealerCardItem {
   logo: string | null;
   activeListings: number;
   isFeatured: boolean;
+  verified: boolean;
   /** Do 3 slike najnovijih oglasa (za karticu placa). */
   previews: string[];
 }
@@ -50,6 +51,7 @@ export async function getDealers(): Promise<DealerCardItem[]> {
     logo: d.logoKey ? imageUrl(d.logoKey, "card") : null,
     activeListings: d.activeListingsCount,
     isFeatured: d.isFeatured,
+    verified: !!d.verifiedAt,
     previews: byDealer.get(d.id) ?? [],
   }));
 }

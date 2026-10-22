@@ -36,6 +36,19 @@ export async function setDealerFeatured(dealerId: string, featured: boolean) {
   invalidate();
 }
 
+/** Oznaka „Provjeren plac": admin je potvrdio PIB u registru. Bez PIB-a se ne može označiti. */
+export async function setDealerVerified(dealerId: string, verified: boolean) {
+  await requireAdmin();
+  const id = uuid.parse(dealerId);
+  const d = await db.query.dealers.findFirst({ where: eq(dealers.id, id), columns: { taxId: true } });
+  if (verified && !d?.taxId) return;
+  await db
+    .update(dealers)
+    .set({ verifiedAt: verified ? new Date() : null })
+    .where(eq(dealers.id, id));
+  invalidate();
+}
+
 /** Admin skida oglas sa sajta (status removed); plac ga vidi kao obrisan. */
 export async function removeListingByAdmin(listingId: string) {
   await requireAdmin();

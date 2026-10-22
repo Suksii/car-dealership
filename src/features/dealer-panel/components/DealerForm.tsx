@@ -48,6 +48,21 @@ export default function DealerForm({ action, cities, dealer, logo, cover, submit
           error={e.cityId}
         />
         <Field label="Adresa" name="address" defaultValue={dealer?.address ?? ""} error={e.address} />
+        <Field
+          label="PIB firme"
+          name="taxId"
+          inputMode="numeric"
+          maxLength={12}
+          placeholder="8 cifara"
+          defaultValue={dealer?.taxId ?? ""}
+          required={!dealer}
+          hint={
+            dealer?.verifiedAt
+              ? "Firma je provjerena. Promjena PIB-a traži ponovnu provjeru."
+              : "Provjeravamo ga u registru prije odobrenja placa. Ne prikazuje se javno."
+          }
+          error={e.taxId}
+        />
         <Field label="Telefon" name="phone" type="tel" defaultValue={dealer?.phone} required error={e.phone} />
         <Field label="Drugi telefon" name="phone2" type="tel" defaultValue={dealer?.phone2 ?? ""} error={e.phone2} />
         <Checkbox

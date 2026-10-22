@@ -22,6 +22,8 @@ export async function getDealersForAdmin() {
       name: dealers.name,
       status: dealers.status,
       isFeatured: dealers.isFeatured,
+      taxId: dealers.taxId,
+      verifiedAt: dealers.verifiedAt,
       phone: dealers.phone,
       activeListings: dealers.activeListingsCount,
       createdAt: dealers.createdAt,

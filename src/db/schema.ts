@@ -161,6 +161,10 @@ export const dealers = pgTable(
     status: dealerStatusEnum("status").notNull().default("pending"),
     isFeatured: boolean("is_featured").notNull().default(false),
     termsAcceptedAt: timestamp("terms_accepted_at", { withTimezone: true }),
+    /** PIB firme (8 cifara); obavezan pri registraciji placa. */
+    taxId: text("tax_id"),
+    /** Kad je admin potvrdio firmu u registru (oznaka „Provjeren plac"); null = nije provjeren. */
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
     activeListingsCount: integer("active_listings_count").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

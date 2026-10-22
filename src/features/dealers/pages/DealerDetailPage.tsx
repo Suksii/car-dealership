@@ -13,6 +13,7 @@ import SortSelect from "@/features/listings/components/SortSelect";
 import { cn } from "@/lib/utils/cn";
 import { pluralSr } from "@/lib/utils/format";
 import EmptyState from "@/features/shared/components/ui/EmptyState";
+import VerifiedBadge from "@/features/dealers/components/VerifiedBadge";
 
 type SP = Record<string, string | string[] | undefined>;
 
@@ -77,6 +78,7 @@ export default async function DealerDetailPage({
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{dealer.name}</h1>
+              {dealer.verifiedAt && <VerifiedBadge className="mt-1.5" />}
               <p className="text-muted mt-1 text-sm">{`${dealer.city.name} · ${result.total} ${pluralSr(result.total, ["vozilo u ponudi", "vozila u ponudi", "vozila u ponudi"])}`}</p>
             </div>
           </div>

@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Store } from "lucide-react";
 import { requireAdmin } from "@/lib/dal";
 import { getAdminStats, getDealersForAdmin } from "@/features/admin/api/getAdminData";
-import { setDealerFeatured, setDealerStatus } from "@/features/admin/actions";
+import { setDealerFeatured, setDealerStatus, setDealerVerified } from "@/features/admin/actions";
+import { CRPS_SEARCH_URL } from "@/features/dealers/lib/taxId";
+import VerifiedBadge from "@/features/dealers/components/VerifiedBadge";
 import { DEALER_STATUS } from "@/features/listings/lib/labels";
 import Badge from "@/features/shared/components/ui/Badge";
 import Button from "@/features/shared/components/ui/Button";
@@ -52,6 +54,25 @@ export default async function AdminDealersPage() {
                   </Link>
                   <Badge variant={STATUS_VARIANT[d.status]}>{DEALER_STATUS[d.status]}</Badge>
                   {d.isFeatured && <Badge variant="accent">Istaknut</Badge>}
+                  {d.verifiedAt && <VerifiedBadge />}
+                </p>
+                <p className="mt-0.5 text-xs">
+                  {d.taxId ? (
+                    <>
+                      <span className="font-semibold">{`PIB ${d.taxId}`}</span>
+                      <span className="text-muted"> · </span>
+                      <a
+                        href={CRPS_SEARCH_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-accent font-semibold hover:underline"
+                      >
+                        Provjeri u CRPS
+                      </a>
+                    </>
+                  ) : (
+                    <span className="text-danger font-semibold">Bez PIB-a</span>
+                  )}
                 </p>
                 <p className="text-muted mt-0.5 truncate text-xs">
                   {`${d.city} · ${d.phone} · ${d.ownerName ?? ""} (${d.ownerEmail}) · ${d.activeListings} ${pluralSr(d.activeListings, ["oglas", "oglasa", "oglasa"])} · ${formatDate(d.createdAt)}`}
@@ -69,6 +90,13 @@ export default async function AdminDealersPage() {
                   <form action={setDealerStatus.bind(null, d.id, "suspended")}>
                     <Button type="submit" size="sm" variant="outline" className="text-danger">
                       Suspenduj
+                    </Button>
+                  </form>
+                )}
+                {d.taxId && (
+                  <form action={setDealerVerified.bind(null, d.id, !d.verifiedAt)}>
+                    <Button type="submit" size="sm" variant={d.verifiedAt ? "ghost" : "outline"}>
+                      {d.verifiedAt ? "Skini provjeru" : "Označi provjeren"}
                     </Button>
                   </form>
                 )}

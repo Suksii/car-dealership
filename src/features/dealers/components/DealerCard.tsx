@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Store } from "lucide-react";
 import { pluralSr } from "@/lib/utils/format";
 import type { DealerCardItem } from "@/features/dealers/api/getDealers";
+import VerifiedBadge from "@/features/dealers/components/VerifiedBadge";
 
 /** Kartica placa: tri slike iz ponude + logo, ime, grad i broj oglasa. */
 export default function DealerCard({ dealer }: { dealer: DealerCardItem }) {
@@ -37,10 +38,11 @@ export default function DealerCard({ dealer }: { dealer: DealerCardItem }) {
           )}
         </div>
         <div className="min-w-0">
-          <h3 className="truncate font-bold tracking-tight">
-            <Link href={`/placevi/${dealer.slug}`} className="after:absolute after:inset-0">
+          <h3 className="flex items-center gap-1.5 font-bold tracking-tight">
+            <Link href={`/placevi/${dealer.slug}`} className="truncate after:absolute after:inset-0">
               {dealer.name}
             </Link>
+            {dealer.verified && <VerifiedBadge compact />}
           </h3>
           <p className="text-muted mt-0.5 truncate text-xs">
             {`${dealer.city} · ${dealer.activeListings} ${pluralSr(dealer.activeListings, ["oglas", "oglasa", "oglasa"])}`}

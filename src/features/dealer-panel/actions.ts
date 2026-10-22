@@ -13,6 +13,7 @@ import { slugify } from "@/lib/utils/slugify";
 import { deleteImage } from "@/lib/images";
 import { IMAGE_KEY } from "@/features/listings/lib/listing";
 import { hoursFromForm } from "@/features/dealers/lib/hours";
+import { normalizeTaxId } from "@/features/dealers/lib/taxId";
 import { nextPreviousPrice } from "@/features/listings/lib/price";
 import {
   fieldErrors,
@@ -56,6 +57,11 @@ const dealerSchema = z
     hours_sun: z.string().trim().max(30).optional(),
     /** Samo pri registraciji placa (createDealer traži "on"). */
     terms: z.string().optional(),
+    /** PIB; obavezan pri registraciji, u profilu prazno = ne mijenjaj. */
+    taxId: z
+      .string()
+      .optional()
+      .refine((v) => !v?.trim() || normalizeTaxId(v) !== null, "PIB ima 8 cifara"),
   })
   .refine((d) => (d.lat === undefined) === (d.lng === undefined), { path: ["lng"], message: "Unesi obje koordinate" });
 
@@ -108,13 +114,15 @@ export async function createDealer(_prev: FormState, fd: FormData): Promise<Form
   if (await getMyDealer()) redirect("/plac");
 
   const parsed = dealerSchema.safeParse(Object.fromEntries(fd));
-  if (parsed.success && parsed.data.terms !== "on")
-    return { errors: { terms: "Moraš prihvatiti uslove za autoplaceve" } };
   if (!parsed.success) return { errors: fieldErrors(parsed.error) };
+  const taxId = normalizeTaxId(parsed.data.taxId);
+  if (!taxId) return { errors: { taxId: "Unesi PIB firme (8 cifara)" } };
+  if (parsed.data.terms !== "on") return { errors: { terms: "Moraš prihvatiti uslove za autoplaceve" } };
 
   await db.transaction(async (tx) => {
     await tx.insert(dealers).values({
       termsAcceptedAt: new Date(),
+      taxId,
       ...dealerValues(parsed.data),
       ownerUserId: session.user.id,
       slug: await uniqueDealerSlug(parsed.data.name),
@@ -135,7 +143,13 @@ export async function updateDealer(_prev: FormState, fd: FormData): Promise<Form
   if (!parsed.success) return { errors: fieldErrors(parsed.error) };
 
   const values = dealerValues(parsed.data);
-  await db.update(dealers).set(values).where(eq(dealers.id, dealer.id));
+  // Novi PIB poništava provjeru: admin mora ponovo potvrditi firmu.
+  const taxId = normalizeTaxId(parsed.data.taxId);
+  const taxPatch = taxId && taxId !== dealer.taxId ? { taxId, verifiedAt: null } : {};
+  await db
+    .update(dealers)
+    .set({ ...values, ...taxPatch })
+    .where(eq(dealers.id, dealer.id));
   // Zamijenjen logo/naslovna: stari fajlovi se brišu iz storage-a da ne ostaju siročići.
   for (const [oldKey, newKey] of [
     [dealer.logoKey, values.logoKey],

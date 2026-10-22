@@ -26,6 +26,7 @@ import FavoriteButton from "@/features/favorites/components/FavoriteButton";
 import ReportButton from "@/features/reports/components/ReportButton";
 import PriceEstimate from "@/features/listings/components/PriceEstimate";
 import ShareButtons from "@/features/listings/components/ShareButtons";
+import VerifiedBadge from "@/features/dealers/components/VerifiedBadge";
 import ListingCard from "@/features/listings/components/ListingCard";
 import { getSimilarListings } from "@/features/listings/api/getSimilarListings";
 
@@ -247,10 +248,11 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
                 )}
               </div>
               <div className="min-w-0">
-                <p className="truncate font-bold">
-                  <Link href={`/placevi/${l.dealer.slug}`} className="hover:text-accent">
+                <p className="flex items-center gap-1.5 font-bold">
+                  <Link href={`/placevi/${l.dealer.slug}`} className="hover:text-accent truncate">
                     {l.dealer.name}
                   </Link>
+                  {l.dealer.verifiedAt && <VerifiedBadge compact />}
                 </p>
                 <p className="text-muted flex items-center gap-1 text-xs">
                   <MapPin size={12} aria-hidden="true" />
