@@ -13,6 +13,7 @@ import { slugify } from "@/lib/utils/slugify";
 import { deleteImage } from "@/lib/images";
 import { IMAGE_KEY } from "@/features/listings/lib/listing";
 import { hoursFromForm } from "@/features/dealers/lib/hours";
+import { nextPreviousPrice } from "@/features/listings/lib/price";
 import {
   fieldErrors,
   listingFormToObject,
@@ -186,6 +187,13 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
     customsCleared: d.customsCleared,
     isDamaged: d.isDamaged,
     firstOwner: d.firstOwner,
+    serviceBook: d.serviceBook,
+    origin: d.origin ?? null,
+    importCountry: d.origin === "imported" ? d.importCountry || null : null,
+    emissionClass: d.emissionClass ?? null,
+    tradeIn: d.tradeIn,
+    financing: d.financing,
+    warrantyMonths: d.warrantyMonths ?? null,
     priceEur: d.priceOnRequest ? 0 : d.priceEur,
     priceNegotiable: d.priceNegotiable,
     priceOnRequest: d.priceOnRequest,
@@ -210,9 +218,12 @@ export async function saveListing(listingId: string | null, _prev: FormState, fd
         publish && existing.status !== "active"
           ? { status: "active" as const, publishedAt: now, expiresAt: expires, soldAt: null }
           : {};
+      // Sniženje cijene: pamti staru cijenu za oznaku „Cijena snižena" (src/features/listings/lib/price.ts).
+      const prev = nextPreviousPrice(existing, { priceEur: values.priceEur, priceOnRequest: values.priceOnRequest });
+      const pricePatch = prev ? { ...prev, priceChangedAt: now } : {};
       await tx
         .update(listings)
-        .set({ ...values, ...statusPatch })
+        .set({ ...values, ...statusPatch, ...pricePatch })
         .where(eq(listings.id, id));
       const old = await tx
         .delete(listingImages)

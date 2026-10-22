@@ -90,6 +90,8 @@ const CARS: Car[] = [
   ["volvo", "xc60", "D4 AWD", 2017, 152000, 22900, "diesel", "automatic", "suv", 140, 1969],
 ];
 
+/** Emisiona klasa po godištu (gruba procjena za demo podatke). */
+const euroFor = (year: number) => (year >= 2015 ? "euro6" : year >= 2011 ? "euro5" : year >= 2006 ? "euro4" : "euro3");
 const COLORS = ["Siva", "Crna", "Bijela", "Plava", "Crvena"];
 
 function monogram(name: string, color: string) {
@@ -162,9 +164,12 @@ for (const [di, d] of DEALERS.entries()) {
       .replace(/^-+|-+$/g, "");
     const daysAgo = Math.floor(Math.random() * 20);
     const [l] =
-      await sql`INSERT INTO listings (public_id, slug, dealer_id, user_id, make_id, model_id, variant, year, mileage_km, fuel, transmission, body_type, drive, engine_cc, power_kw, doors, seats, color, customs_cleared, price_eur, price_negotiable, description, city_id, status, published_at, expires_at, views_count)
+      await sql`INSERT INTO listings (public_id, slug, dealer_id, user_id, make_id, model_id, variant, year, mileage_km, fuel, transmission, body_type, drive, engine_cc, power_kw, doors, seats, color, customs_cleared, price_eur, price_negotiable, description, city_id, status, published_at, expires_at, views_count, service_book, origin, import_country, emission_class, trade_in, financing, warranty_months, previous_price_eur, price_changed_at)
       VALUES (${publicId}, ${slug}, ${dealer.id}, ${user.id}, ${m.make_id}, ${m.id}, ${c[2]}, ${c[3]}, ${c[4]}, ${c[6]}, ${c[7]}, ${c[8]}, ${c[8] === "suv" ? "awd" : "fwd"}, ${c[10] || null}, ${c[9]}, 5, 5, ${COLORS[i % COLORS.length]}, true, ${c[5]}, ${i % 3 === 0},
-        ${`${m.make_name} ${m.model_name} ${c[2]}, uvoz iz Njemačke, servisna knjiga, registrovan do kraja godine. Moguća zamjena i kredit. Demo oglas.`}, ${cities[d.city]}, 'active', now() - ${daysAgo + " days"}::interval, now() + '60 days'::interval, ${Math.floor(Math.random() * 400)})
+        ${`${m.make_name} ${m.model_name} ${c[2]}, uvoz iz Njemačke, servisna knjiga, registrovan do kraja godine. Moguća zamjena i kredit. Demo oglas.`}, ${cities[d.city]}, 'active', now() - ${daysAgo + " days"}::interval, now() + '60 days'::interval, ${Math.floor(Math.random() * 400)},
+        ${i % 2 === 0}, ${i % 4 === 3 ? "domestic" : "imported"}, ${i % 4 === 3 ? null : "Njemačka"}, ${euroFor(c[3])},
+        ${i % 2 === 0}, ${i % 3 !== 2}, ${i % 4 === 0 ? 12 : null},
+        ${i % 5 === 1 ? c[5] + 1000 : null}, ${i % 5 === 1 ? new Date(Date.now() - 3 * 86400_000) : null})
       RETURNING id`;
     const imgs = await listingPhotos(`${c[0]}/${c[1]}`);
     for (const [k, img] of imgs.entries()) {

@@ -6,6 +6,7 @@ import { imageUrl } from "@/lib/images";
 import { LISTINGS_TAG } from "./getListings";
 import { listingTitle } from "@/features/listings/lib/listing";
 import { formatRelativeDay } from "@/lib/utils/format";
+import { isPriceDropped } from "@/features/listings/lib/price";
 
 /** Oglas po publicId (zadnji dio URL-a). Vraća null umjesto da baca (use cache). */
 export async function getListingByPublicId(publicId: string) {
@@ -33,6 +34,8 @@ export async function getListingByPublicId(publicId: string) {
     publishedAt: row.publishedAt?.toISOString() ?? null,
     /** Na nivou dana, računato pri keširanju (stranica je prerenderovana, pa Date.now() ne smije u render). */
     publishedAgo: formatRelativeDay(row.publishedAt, Date.now()),
+    /** Oznaka „Cijena snižena" (računato pri keširanju, kao i publishedAgo). */
+    priceDropped: isPriceDropped(row, Date.now()),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     soldAt: row.soldAt?.toISOString() ?? null,

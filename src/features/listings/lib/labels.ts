@@ -21,6 +21,25 @@ export const BODY = {
 } as const;
 export const DRIVE = { fwd: "Prednji", rwd: "Zadnji", awd: "4x4" } as const;
 export const CONDITION = { new: "Novo", used: "Polovno" } as const;
+export const ORIGIN = { domestic: "Domaće (kupljeno u CG)", imported: "Uvoz" } as const;
+export const EMISSION = {
+  euro6: "Euro 6",
+  euro5: "Euro 5",
+  euro4: "Euro 4",
+  euro3: "Euro 3",
+  euro2: "Euro 2",
+  euro1: "Euro 1",
+} as const;
+/** Brzi filteri (prekidači) na listi: ključ u ListingFilters -> labela. */
+export const FLAGS = {
+  customs: "Ocarinjen",
+  undamaged: "Neoštećen",
+  firstOwner: "Prvi vlasnik",
+  serviceBook: "Servisna knjiga",
+  tradeIn: "Moguća zamjena",
+  financing: "Kredit / lizing",
+  warranty: "Sa garancijom",
+} as const;
 export const LISTING_STATUS = {
   draft: "Nacrt",
   active: "Aktivan",
@@ -41,3 +60,6 @@ export type FuelKey = keyof typeof FUEL;
 export type TransmissionKey = keyof typeof TRANSMISSION;
 export type BodyKey = keyof typeof BODY;
 export type DriveKey = keyof typeof DRIVE;
+export type OriginKey = keyof typeof ORIGIN;
+export type EmissionKey = keyof typeof EMISSION;
+export type FlagKey = keyof typeof FLAGS;

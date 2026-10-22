@@ -1,5 +1,5 @@
 import type { ListingFilters } from "@/features/listings/api/getListings";
-import { FUEL, TRANSMISSION, BODY } from "./labels";
+import { FUEL, TRANSMISSION, BODY, DRIVE, FLAGS, type FlagKey } from "./labels";
 import { formatPrice, formatKm } from "@/lib/utils/format";
 
 type SP = Record<string, string | string[] | undefined>;
@@ -38,6 +38,27 @@ export const KM_STEPS = [
   10000, 25000, 50000, 75000, 100000, 125000, 150000, 175000, 200000, 250000, 300000, 400000,
 ] as const;
 
+/** Snaga od, u KS. */
+export const POWER_STEPS = [75, 90, 100, 120, 150, 180, 200, 250, 300] as const;
+/** Objavljeno u posljednjih N dana. */
+export const PUBLISHED_OPTIONS = [
+  { value: "1", label: "Posljednja 24 sata" },
+  { value: "7", label: "Posljednjih 7 dana" },
+] as const;
+export const FLAG_KEYS = Object.keys(FLAGS) as FlagKey[];
+/** URL ključevi za prekidače (vrijednost u URL-u je "1"). */
+const FLAG_URL: Record<FlagKey, string> = {
+  customs: "carinjen",
+  undamaged: "neostecen",
+  firstOwner: "prvi_vlasnik",
+  serviceBook: "servisna",
+  tradeIn: "zamjena",
+  financing: "kredit",
+  warranty: "garancija",
+};
+const flag = (v: string | string[] | undefined) => (str(v) === "1" ? true : undefined);
+const MAX_Q = 60;
+
 export const SORT_OPTIONS = [
   { value: "newest", label: "Najnovije" },
   { value: "price_asc", label: "Cijena: niža prvo" },
@@ -61,6 +82,11 @@ export function parseFilters(sp: SP): ListingFilters {
     fuel: manyOf(sp.gorivo, Object.keys(FUEL)),
     transmission: manyOf(sp.mjenjac, Object.keys(TRANSMISSION)),
     body: manyOf(sp.karoserija, Object.keys(BODY)),
+    drive: manyOf(sp.pogon, Object.keys(DRIVE)),
+    powerMinHp: num(sp.ks_od),
+    q: str(sp.q)?.trim().replace(/\s+/g, " ").slice(0, MAX_Q) || undefined,
+    publishedDays: oneOf(str(sp.objavljeno), ["1", "7"]) ? Number(str(sp.objavljeno)) : undefined,
+    ...Object.fromEntries(FLAG_KEYS.map((k) => [k, flag(sp[FLAG_URL[k]])])),
     sort:
       oneOf(
         str(sp.sort),
@@ -83,6 +109,11 @@ const KEYS: Record<keyof Omit<ListingFilters, "page">, string> = {
   fuel: "gorivo",
   transmission: "mjenjac",
   body: "karoserija",
+  drive: "pogon",
+  powerMinHp: "ks_od",
+  q: "q",
+  publishedDays: "objavljeno",
+  ...FLAG_URL,
   sort: "sort",
 };
 
@@ -95,6 +126,10 @@ export function filtersToQuery(f: ListingFilters, overrides: Partial<ListingFilt
     if (v === undefined || v === "" || (k === "sort" && v === "newest")) continue;
     if (Array.isArray(v)) {
       if (v.length) q.set(urlKey, v.join(","));
+      continue;
+    }
+    if (typeof v === "boolean") {
+      if (v) q.set(urlKey, "1");
       continue;
     }
     q.set(urlKey, String(v));
@@ -118,10 +153,15 @@ export function countActiveFilters(f: ListingFilters): number {
       "fuel",
       "transmission",
       "body",
+      "drive",
+      "powerMinHp",
+      "q",
+      "publishedDays",
+      ...FLAG_KEYS,
     ] as const
   ).filter((k) => {
     const v = f[k];
-    return Array.isArray(v) ? v.length > 0 : v !== undefined;
+    return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== false;
   }).length;
 }
 
@@ -147,7 +187,10 @@ export function activeFilterChips(f: ListingFilters, cat: ChipCatalog): FilterCh
   const push = (key: keyof ListingFilters, label: string, ...extra: (keyof ListingFilters)[]) =>
     chips.push({ id: key, label, query: without(key, ...extra) });
   /** Po jedan čip za svaku vrijednost višestrukog filtera; uklanja samo tu vrijednost. */
-  const pushEach = (key: "model" | "city" | "fuel" | "transmission" | "body", labelOf: (v: string) => string) => {
+  const pushEach = (
+    key: "model" | "city" | "fuel" | "transmission" | "body" | "drive",
+    labelOf: (v: string) => string,
+  ) => {
     const all: string[] = f[key] ?? [];
     for (const v of all) {
       const rest = all.filter((x) => x !== v);
@@ -160,6 +203,7 @@ export function activeFilterChips(f: ListingFilters, cat: ChipCatalog): FilterCh
   };
 
   const nameOf = (list: Named[], slug: string) => list.find((x) => x.slug === slug)?.name ?? slug;
+  if (f.q) push("q", `„${f.q}"`);
   if (f.make) push("make", nameOf(cat.makes, f.make), "model");
   pushEach("model", (v) => nameOf(cat.models, v));
   if (f.priceMin && f.priceMax)
@@ -179,5 +223,10 @@ export function activeFilterChips(f: ListingFilters, cat: ChipCatalog): FilterCh
   pushEach("transmission", (v) => TRANSMISSION[v as keyof typeof TRANSMISSION] ?? v);
   pushEach("body", (v) => BODY[v as keyof typeof BODY] ?? v);
   pushEach("city", (v) => nameOf(cat.cities, v));
+  pushEach("drive", (v) => DRIVE[v as keyof typeof DRIVE] ?? v);
+  if (f.powerMinHp) push("powerMinHp", `od ${f.powerMinHp} KS`);
+  if (f.publishedDays)
+    push("publishedDays", f.publishedDays === 1 ? "Posljednja 24 sata" : `Posljednjih ${f.publishedDays} dana`);
+  for (const k of FLAG_KEYS) if (f[k]) push(k, FLAGS[k]);
   return chips;
 }

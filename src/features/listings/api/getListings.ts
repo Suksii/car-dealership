@@ -3,7 +3,7 @@ import { and, asc, count, desc, eq, gte, inArray, lte, sql, type SQL } from "dri
 import { db } from "@/db";
 import { listings, dealers, makes, models, cities } from "@/db/schema";
 import { toCardItem, type ListingCardItem } from "@/features/listings/lib/card";
-import type { FuelKey, TransmissionKey, BodyKey } from "@/features/listings/lib/labels";
+import type { FuelKey, TransmissionKey, BodyKey, DriveKey } from "@/features/listings/lib/labels";
 import { imageUrl } from "@/lib/images";
 
 export const LISTINGS_TAG = "listings";
@@ -23,9 +23,26 @@ export interface ListingFilters {
   fuel?: FuelKey[];
   transmission?: TransmissionKey[];
   body?: BodyKey[];
+  drive?: DriveKey[];
+  /** Snaga od, u KS (korisnici misle u konjima); u bazi je kW. */
+  powerMinHp?: number;
+  /** Pretraga po riječi: marka, model, varijanta i opis. */
+  q?: string;
+  /** Objavljeno u posljednjih N dana (1 ili 7). */
+  publishedDays?: number;
+  customs?: boolean;
+  undamaged?: boolean;
+  firstOwner?: boolean;
+  serviceBook?: boolean;
+  tradeIn?: boolean;
+  financing?: boolean;
+  warranty?: boolean;
   sort?: "newest" | "price_asc" | "price_desc" | "year_desc" | "km_asc";
   page?: number;
 }
+
+/** "%" i "_" iz korisničkog unosa ne smiju da postanu LIKE džokeri. */
+const likeEscape = (v: string) => v.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 /** Javno vidljiv: aktivan, plac aktivan i nije istekao (cron ga tek kasnije označi kao expired). */
 const publicListing = () =>
@@ -45,6 +62,25 @@ function whereFor(f: ListingFilters): SQL[] {
   if (f.fuel?.length) w.push(inArray(listings.fuel, f.fuel));
   if (f.transmission?.length) w.push(inArray(listings.transmission, f.transmission));
   if (f.body?.length) w.push(inArray(listings.bodyType, f.body));
+  if (f.drive?.length) w.push(inArray(listings.drive, f.drive));
+  if (f.powerMinHp) w.push(gte(listings.powerKw, Math.floor(f.powerMinHp / 1.35962)));
+  if (f.publishedDays) w.push(sql`${listings.publishedAt} > now() - make_interval(days => ${f.publishedDays})`);
+  if (f.customs) w.push(eq(listings.customsCleared, true));
+  if (f.undamaged) w.push(eq(listings.isDamaged, false));
+  if (f.firstOwner) w.push(eq(listings.firstOwner, true));
+  if (f.serviceBook) w.push(eq(listings.serviceBook, true));
+  if (f.tradeIn) w.push(eq(listings.tradeIn, true));
+  if (f.financing) w.push(eq(listings.financing, true));
+  if (f.warranty) w.push(sql`${listings.warrantyMonths} > 0`);
+  if (f.q) {
+    // Svaka riječ mora da se nađe negdje u marki, modelu, varijanti ili opisu (redosljed nebitan).
+    for (const word of f.q.split(/\s+/).filter(Boolean).slice(0, 5)) {
+      const pattern = `%${likeEscape(word)}%`;
+      w.push(
+        sql`concat_ws(' ', ${makes.name}, ${models.name}, ${listings.variant}, ${listings.description}) ILIKE ${pattern}`,
+      );
+    }
+  }
   return w;
 }
 

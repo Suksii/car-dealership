@@ -54,6 +54,8 @@ export const bodyTypeEnum = pgEnum("body_type", [
 ]);
 export const driveTypeEnum = pgEnum("drive_type", ["fwd", "rwd", "awd"]);
 export const vehicleConditionEnum = pgEnum("vehicle_condition", ["new", "used"]);
+export const vehicleOriginEnum = pgEnum("vehicle_origin", ["domestic", "imported"]);
+export const emissionClassEnum = pgEnum("emission_class", ["euro1", "euro2", "euro3", "euro4", "euro5", "euro6"]);
 export const contactTypeEnum = pgEnum("contact_type", ["phone", "viber", "whatsapp", "email"]);
 export const reportStatusEnum = pgEnum("report_status", ["open", "resolved", "dismissed"]);
 
@@ -218,10 +220,20 @@ export const listings = pgTable(
     customsCleared: boolean("customs_cleared").notNull().default(true),
     isDamaged: boolean("is_damaged").notNull().default(false),
     firstOwner: boolean("first_owner").notNull().default(false),
+    serviceBook: boolean("service_book").notNull().default(false),
+    origin: vehicleOriginEnum("origin"),
+    importCountry: text("import_country"),
+    emissionClass: emissionClassEnum("emission_class"),
 
     priceEur: integer("price_eur").notNull(),
     priceNegotiable: boolean("price_negotiable").notNull().default(false),
     priceOnRequest: boolean("price_on_request").notNull().default(false),
+    /** Cijena prije posljednjeg sniženja (za oznaku „Cijena snižena"); null kad nije snižena. */
+    previousPriceEur: integer("previous_price_eur"),
+    priceChangedAt: timestamp("price_changed_at", { withTimezone: true }),
+    tradeIn: boolean("trade_in").notNull().default(false),
+    financing: boolean("financing").notNull().default(false),
+    warrantyMonths: smallint("warranty_months"),
 
     description: text("description"),
     cityId: smallint("city_id")

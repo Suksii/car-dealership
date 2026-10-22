@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { getModelsForMake, type SlimModel } from "@/features/listings/api/getModels";
 import { countListings, type ListingFilters } from "@/features/listings/api/getListings";
-import { FUEL, TRANSMISSION, BODY } from "@/features/listings/lib/labels";
+import { FUEL, TRANSMISSION, BODY, DRIVE } from "@/features/listings/lib/labels";
 
 /** Klijent (SearchBox, filteri) traži modele kad se izabere marka. Keširano u getModelsForMake. */
 export async function loadModels(makeId: number): Promise<SlimModel[]> {
@@ -38,6 +38,17 @@ const countSchema = z.object({
   fuel: keys(FUEL),
   transmission: keys(TRANSMISSION),
   body: keys(BODY),
+  drive: keys(DRIVE),
+  powerMinHp: posInt,
+  q: z.string().trim().max(60).optional(),
+  publishedDays: z.union([z.literal(1), z.literal(7)]).optional(),
+  customs: z.boolean().optional(),
+  undamaged: z.boolean().optional(),
+  firstOwner: z.boolean().optional(),
+  serviceBook: z.boolean().optional(),
+  tradeIn: z.boolean().optional(),
+  financing: z.boolean().optional(),
+  warranty: z.boolean().optional(),
 });
 
 /** Broj oglasa za nacrt filtera (sheet na telefonu). Javni podatak, keširan u countListings. */

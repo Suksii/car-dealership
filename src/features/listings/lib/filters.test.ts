@@ -51,3 +51,42 @@ describe("activeFilterChips", () => {
     expect(activeFilterChips(f, cat)[0].query).toBe(filtersToQuery({ sort: "price_asc" }));
   });
 });
+
+describe("novi filteri", () => {
+  it("pretraga, pogon, snaga, objavljeno i prekidači idu kroz URL i nazad", () => {
+    const f = parseFilters({
+      q: "  panorama   kuka ",
+      pogon: "awd",
+      ks_od: "150",
+      objavljeno: "7",
+      zamjena: "1",
+      kredit: "1",
+      neostecen: "0",
+    });
+    expect(f).toMatchObject({
+      q: "panorama kuka",
+      drive: ["awd"],
+      powerMinHp: 150,
+      publishedDays: 7,
+      tradeIn: true,
+      financing: true,
+    });
+    expect(f.undamaged).toBeUndefined();
+    expect(parseFilters(Object.fromEntries(new URLSearchParams(filtersToQuery(f))))).toMatchObject(f);
+    expect(countActiveFilters(f)).toBe(6);
+  });
+
+  it("odbacuje nepoznate vrijednosti i predugačku pretragu skraćuje", () => {
+    const f = parseFilters({ objavljeno: "30", pogon: "tenk", q: "a".repeat(100) });
+    expect(f.publishedDays).toBeUndefined();
+    expect(f.drive).toBeUndefined();
+    expect(f.q).toHaveLength(60);
+  });
+
+  it("čip za prekidač uklanja samo njega", () => {
+    const f = parseFilters({ zamjena: "1", kredit: "1" });
+    const chips = activeFilterChips(f, cat);
+    expect(chips.map((c) => c.label)).toEqual(["Moguća zamjena", "Kredit / lizing"]);
+    expect(chips[0].query).toBe("kredit=1");
+  });
+});

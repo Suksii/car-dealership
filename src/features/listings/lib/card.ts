@@ -1,5 +1,6 @@
 import { imageUrl } from "@/lib/images";
 import { formatRelativeDay } from "@/lib/utils/format";
+import { isPriceDropped } from "./price";
 import { listingPath, listingTitle } from "./listing";
 import type { FuelKey, TransmissionKey, BodyKey } from "./labels";
 
@@ -28,6 +29,8 @@ export interface ListingCardItem {
   isNew: boolean;
   /** "danas", "juče", "prije 5 dana"… (na nivou dana, računato pri keširanju liste). */
   publishedAgo: string | null;
+  /** Stara cijena kad je oglas skoro snižen (vidi lib/price.ts), inače null. */
+  previousPriceEur: number | null;
   customsCleared: boolean;
 }
 
@@ -47,6 +50,8 @@ type Row = {
   variant: string | null;
   customsCleared: boolean;
   publishedAt: Date | null;
+  previousPriceEur: number | null;
+  priceChangedAt: Date | null;
   make: { name: string };
   model: { name: string };
   city: { name: string };
@@ -79,6 +84,7 @@ export function toCardItem(row: Row, now: number): ListingCardItem {
     dealer: row.dealer ? { name: row.dealer.name, slug: row.dealer.slug } : null,
     isNew: !!row.publishedAt && now - row.publishedAt.getTime() < NEW_DAYS * 86400_000,
     publishedAgo: formatRelativeDay(row.publishedAt, now),
+    previousPriceEur: isPriceDropped(row, now) ? row.previousPriceEur : null,
     customsCleared: row.customsCleared,
   };
 }

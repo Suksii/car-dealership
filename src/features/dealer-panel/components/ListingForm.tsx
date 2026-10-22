@@ -5,7 +5,16 @@ import { Field, TextareaField, SubmitButton, FieldWrap } from "@/features/shared
 import SelectField from "@/features/shared/components/ui/SelectField";
 import Checkbox from "@/features/shared/components/ui/Checkbox";
 import ImageUploader, { type UploadedImage } from "@/features/dealer-panel/components/ImageUploader";
-import { FUEL, TRANSMISSION, BODY, DRIVE, CONDITION, FEATURE_GROUP } from "@/features/listings/lib/labels";
+import {
+  FUEL,
+  TRANSMISSION,
+  BODY,
+  DRIVE,
+  CONDITION,
+  FEATURE_GROUP,
+  ORIGIN,
+  EMISSION,
+} from "@/features/listings/lib/labels";
 import type { Catalog } from "@/lib/catalog";
 import type { Listing } from "@/db/schema";
 import type { FormState } from "@/features/dealer-panel/actions";
@@ -24,6 +33,8 @@ const TRANSMISSION_OPTS = toOptions(TRANSMISSION);
 const BODY_OPTS = toOptions(BODY);
 const DRIVE_OPTS = toOptions(DRIVE);
 const CONDITION_OPTS = toOptions(CONDITION);
+const ORIGIN_OPTS = toOptions(ORIGIN);
+const EMISSION_OPTS = toOptions(EMISSION);
 const CURRENT_YEAR = new Date().getFullYear(); // module scope, ne u renderu
 const YEAR_OPTS = Array.from({ length: CURRENT_YEAR + 1 - 1969 }, (_, i) => String(CURRENT_YEAR + 1 - i)).map((y) => ({
   value: y,
@@ -38,6 +49,7 @@ export default function ListingForm({ action, catalog, listing, images = [], fea
   const [makeId, setMakeId] = useState(str(listing?.makeId));
   const [modelId, setModelId] = useState(str(listing?.modelId));
   const [onRequest, setOnRequest] = useState(listing?.priceOnRequest ?? false);
+  const [origin, setOrigin] = useState(listing?.origin ?? "");
   const [selected, setSelected] = useState<Set<number>>(() => new Set(featureIds));
 
   const makeOptions = useMemo(
@@ -208,11 +220,40 @@ export default function ListingForm({ action, catalog, listing, images = [], fea
             defaultValue={listing?.registeredUntil ?? ""}
             error={e.registeredUntil}
           />
+          <SelectField
+            label="Emisiona klasa"
+            name="emissionClass"
+            options={EMISSION_OPTS}
+            defaultValue={listing?.emissionClass ?? ""}
+            placeholder="Nije navedeno"
+            clearable
+            error={e.emissionClass}
+          />
+          <SelectField
+            label="Porijeklo"
+            name="origin"
+            options={ORIGIN_OPTS}
+            defaultValue={listing?.origin ?? ""}
+            onChange={setOrigin}
+            placeholder="Nije navedeno"
+            clearable
+            error={e.origin}
+          />
+          {origin === "imported" && (
+            <Field
+              label="Zemlja uvoza"
+              name="importCountry"
+              placeholder="npr. Njemačka"
+              defaultValue={listing?.importCountry ?? ""}
+              error={e.importCountry}
+            />
+          )}
         </div>
         <div className="flex flex-wrap gap-6">
           <Checkbox name="customsCleared" label="Ocarinjen" defaultChecked={listing?.customsCleared ?? true} />
           <Checkbox name="isDamaged" label="Oštećen / udaren" defaultChecked={listing?.isDamaged ?? false} />
           <Checkbox name="firstOwner" label="Prvi vlasnik" defaultChecked={listing?.firstOwner ?? false} />
+          <Checkbox name="serviceBook" label="Servisna knjiga" defaultChecked={listing?.serviceBook ?? false} />
         </div>
       </section>
 
@@ -252,6 +293,23 @@ export default function ListingForm({ action, catalog, listing, images = [], fea
             checked={onRequest}
             onChange={(ev) => setOnRequest(ev.target.checked)}
           />
+        </div>
+        <div className="border-border grid gap-4 border-t pt-5 sm:grid-cols-2">
+          <Field
+            label="Garancija (mjeseci)"
+            name="warrantyMonths"
+            type="number"
+            min={1}
+            max={120}
+            inputMode="numeric"
+            placeholder="Bez garancije"
+            defaultValue={str(listing?.warrantyMonths)}
+            error={e.warrantyMonths}
+          />
+        </div>
+        <div className="flex flex-wrap gap-6">
+          <Checkbox name="tradeIn" label="Moguća zamjena" defaultChecked={listing?.tradeIn ?? false} />
+          <Checkbox name="financing" label="Moguć kredit / lizing" defaultChecked={listing?.financing ?? false} />
         </div>
       </section>
 

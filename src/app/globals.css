@@ -56,6 +56,10 @@
   button {
     cursor: pointer;
   }
+  /* <details> bez ugrađenog trougla; strelicu crtamo sami (ChevronDown). */
+  summary::-webkit-details-marker {
+    display: none;
+  }
   :root {
     --header-h: 64px;
   }

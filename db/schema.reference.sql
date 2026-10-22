@@ -20,6 +20,8 @@ CREATE TYPE transmission    AS ENUM ('manual', 'automatic');
 CREATE TYPE body_type       AS ENUM ('hatchback', 'sedan', 'wagon', 'suv', 'coupe', 'convertible', 'minivan', 'pickup', 'van');
 CREATE TYPE drive_type      AS ENUM ('fwd', 'rwd', 'awd');
 CREATE TYPE vehicle_condition AS ENUM ('new', 'used');
+CREATE TYPE vehicle_origin  AS ENUM ('domestic', 'imported');
+CREATE TYPE emission_class  AS ENUM ('euro1', 'euro2', 'euro3', 'euro4', 'euro5', 'euro6');
 CREATE TYPE contact_type    AS ENUM ('phone', 'viber', 'whatsapp', 'email');
 CREATE TYPE report_status   AS ENUM ('open', 'resolved', 'dismissed');
 
@@ -159,11 +161,20 @@ CREATE TABLE listings (
   customs_cleared  boolean NOT NULL DEFAULT true, -- ocarinjen
   is_damaged       boolean NOT NULL DEFAULT false,
   first_owner      boolean NOT NULL DEFAULT false,
+  service_book     boolean NOT NULL DEFAULT false, -- servisna knjiga
+  origin           vehicle_origin,                -- domaće / uvoz
+  import_country   text,                          -- samo za uvoz
+  emission_class   emission_class,
 
   -- cijena
   price_eur        int NOT NULL CHECK (price_eur >= 0),
   price_negotiable boolean NOT NULL DEFAULT false,
   price_on_request boolean NOT NULL DEFAULT false,
+  previous_price_eur int,                         -- cijena prije sniženja (oznaka „Cijena snižena")
+  price_changed_at timestamptz,
+  trade_in         boolean NOT NULL DEFAULT false, -- moguća zamjena
+  financing        boolean NOT NULL DEFAULT false, -- kredit / lizing
+  warranty_months  smallint,                      -- garancija placa
 
   -- sadržaj
   description      text,

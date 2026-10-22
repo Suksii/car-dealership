@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { customAlphabet } from "nanoid";
 import { slugify } from "@/lib/utils/slugify";
-import { FUEL, TRANSMISSION, BODY, DRIVE, CONDITION } from "./labels";
+import { FUEL, TRANSMISSION, BODY, DRIVE, CONDITION, ORIGIN, EMISSION } from "./labels";
 
 export const LISTING_DAYS = 60;
 export const MAX_IMAGES = 15;
@@ -45,6 +45,13 @@ export const listingSchema = z
     customsCleared: bool,
     isDamaged: bool,
     firstOwner: bool,
+    serviceBook: bool,
+    origin: z.preprocess(emptyToUndef, keys(ORIGIN).optional()),
+    importCountry: z.string().trim().max(40).optional(),
+    emissionClass: z.preprocess(emptyToUndef, keys(EMISSION).optional()),
+    tradeIn: bool,
+    financing: bool,
+    warrantyMonths: optInt(1, 120),
     priceEur: z.preprocess(emptyToUndef, z.coerce.number().int().min(0).max(5_000_000).optional()).default(0),
     priceNegotiable: bool,
     priceOnRequest: bool,

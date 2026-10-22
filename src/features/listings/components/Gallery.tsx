@@ -24,9 +24,7 @@ export default function Gallery({ images, alt }: { images: Img[]; alt: string })
 
   if (images.length === 0) {
     return (
-      <div className="text-muted flex aspect-4/3 items-center justify-center rounded-2xl bg-neutral-100">
-        Bez slika
-      </div>
+      <div className="text-muted flex aspect-4/3 items-center justify-center rounded-2xl bg-neutral-100">Bez slika</div>
     );
   }
   return (

@@ -69,7 +69,19 @@ export default function ListingCard({ item, priority = false, className }: Props
           {item.priceOnRequest ? (
             <span className="text-muted text-sm font-bold sm:text-base">Cijena na upit</span>
           ) : (
-            <span className="text-base font-extrabold tracking-tight sm:text-lg">{formatPrice(item.priceEur)}</span>
+            <span
+              className={cn(
+                "text-base font-extrabold tracking-tight sm:text-lg",
+                item.previousPriceEur && "text-success",
+              )}
+            >
+              {formatPrice(item.priceEur)}
+            </span>
+          )}
+          {item.previousPriceEur && !item.priceOnRequest && (
+            <span className="text-muted text-xs line-through" title="Cijena prije sniženja">
+              {formatPrice(item.previousPriceEur)}
+            </span>
           )}
           {item.priceNegotiable && !item.priceOnRequest && (
             <span className="text-muted hidden text-xs sm:inline">po dogovoru</span>

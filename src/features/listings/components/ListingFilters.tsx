@@ -3,12 +3,21 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import Select from "@/features/shared/components/ui/Select";
 import Button from "@/features/shared/components/ui/Button";
 import { FieldWrap } from "@/features/shared/components/ui/Field";
-import { FUEL, TRANSMISSION, BODY } from "@/features/listings/lib/labels";
-import { filtersToQuery, countActiveFilters, PRICE_STEPS, KM_STEPS } from "@/features/listings/lib/filters";
+import Checkbox from "@/features/shared/components/ui/Checkbox";
+import { FUEL, TRANSMISSION, BODY, DRIVE, FLAGS } from "@/features/listings/lib/labels";
+import {
+  filtersToQuery,
+  countActiveFilters,
+  PRICE_STEPS,
+  KM_STEPS,
+  POWER_STEPS,
+  PUBLISHED_OPTIONS,
+  FLAG_KEYS,
+} from "@/features/listings/lib/filters";
 import { loadModels, loadListingCount } from "@/features/listings/catalog-actions";
 import { useListingsTransition } from "@/features/listings/components/ListingsTransition";
 import type { SlimModel } from "@/features/listings/api/getModels";
@@ -36,6 +45,9 @@ type Props = {
 };
 
 const toOpts = (m: Record<string, string>) => Object.entries(m).map(([value, label]) => ({ value, label }));
+const DRIVE_OPTS = toOpts(DRIVE);
+const POWER_OPTS = POWER_STEPS.map((p) => ({ value: String(p), label: `od ${p} KS` }));
+const PUBLISHED_OPTS = [...PUBLISHED_OPTIONS];
 const FUEL_OPTS = toOpts(FUEL),
   TRANS_OPTS = toOpts(TRANSMISSION),
   BODY_OPTS = toOpts(BODY);
@@ -108,16 +120,22 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
         [k]:
           v === ""
             ? undefined
-            : typeof p[k] === "number" || ["priceMin", "priceMax", "yearMin", "yearMax", "kmMax"].includes(k)
+            : typeof p[k] === "number" ||
+                ["priceMin", "priceMax", "yearMin", "yearMax", "kmMax", "powerMinHp", "publishedDays"].includes(k)
               ? Number(v)
               : v,
         page: 1,
         ...(k === "make" ? { model: undefined } : {}),
       }));
   const s = (v: number | string | undefined) => (v === undefined ? "" : String(v));
-  type ManyKey = "model" | "city" | "fuel" | "transmission" | "body";
+  type ManyKey = "model" | "city" | "fuel" | "transmission" | "body" | "drive";
   const setMany = (k: ManyKey) => (v: string[]) =>
     setF((p) => ({ ...p, [k]: v.length ? (v as Filters[ManyKey]) : undefined, page: 1 }));
+  const setFlag = (k: (typeof FLAG_KEYS)[number]) => (on: boolean) =>
+    setF((p) => ({ ...p, [k]: on || undefined, page: 1 }));
+  // „Više filtera" je otvoreno ako je nešto od toga već uključeno.
+  const extrasActive =
+    !!filters.drive?.length || !!filters.powerMinHp || !!filters.publishedDays || FLAG_KEYS.some((k) => filters[k]);
 
   function close() {
     setOpen(false);
@@ -140,6 +158,28 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
 
   const fields = (
     <>
+      <div className="relative">
+        <Search
+          size={16}
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-neutral-500"
+        />
+        <input
+          type="search"
+          aria-label="Pretraga po riječi"
+          placeholder="Pretraži: panorama, AMG, kuka…"
+          maxLength={60}
+          value={f.q ?? ""}
+          onChange={(ev) => setF((p) => ({ ...p, q: ev.target.value || undefined, page: 1 }))}
+          onKeyDown={(ev) => {
+            if (ev.key === "Enter") {
+              ev.preventDefault();
+              apply();
+            }
+          }}
+          className="field-control h-10 pl-10"
+        />
+      </div>
       <FieldWrap label="Marka">
         <Select
           aria-label="Marka"
@@ -277,6 +317,55 @@ export default function ListingFilters({ filters, makes, models, cities, activeC
           size="sm"
         />
       </FieldWrap>
+      <details className="group border-border border-t pt-4" open={extrasActive || undefined}>
+        <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold">
+          <span>Više filtera</span>
+          <ChevronDown size={16} aria-hidden="true" className="text-muted transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="mt-4 flex flex-col gap-4">
+          <FieldWrap label="Pogon">
+            <Select
+              aria-label="Pogon"
+              options={DRIVE_OPTS}
+              multiple
+              values={f.drive ?? []}
+              onValuesChange={setMany("drive")}
+              placeholder="Svi"
+              clearable
+              size="sm"
+            />
+          </FieldWrap>
+          <div className="grid grid-cols-2 gap-3">
+            <FieldWrap label="Snaga">
+              <Select
+                aria-label="Snaga od"
+                options={POWER_OPTS}
+                value={s(f.powerMinHp)}
+                onChange={set("powerMinHp")}
+                placeholder="Bilo koja"
+                clearable
+                size="sm"
+              />
+            </FieldWrap>
+            <FieldWrap label="Objavljeno">
+              <Select
+                aria-label="Objavljeno"
+                options={PUBLISHED_OPTS}
+                value={s(f.publishedDays)}
+                onChange={set("publishedDays")}
+                placeholder="Bilo kada"
+                clearable
+                size="sm"
+              />
+            </FieldWrap>
+          </div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+            {FLAG_KEYS.map((k) => (
+              <Checkbox key={k} label={FLAGS[k]} checked={!!f[k]} onChange={(ev) => setFlag(k)(ev.target.checked)} />
+            ))}
+          </div>
+        </div>
+      </details>
     </>
   );
 
