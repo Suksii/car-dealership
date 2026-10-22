@@ -57,7 +57,7 @@ const dealerSchema = z
     hours_sun: z.string().trim().max(30).optional(),
     /** Samo pri registraciji placa (createDealer traži "on"). */
     terms: z.string().optional(),
-    /** PIB; obavezan pri registraciji, u profilu prazno = ne mijenjaj. */
+    /** PIB, opcion; u profilu prazno = ne mijenjaj. */
     taxId: z
       .string()
       .optional()
@@ -115,8 +115,8 @@ export async function createDealer(_prev: FormState, fd: FormData): Promise<Form
 
   const parsed = dealerSchema.safeParse(Object.fromEntries(fd));
   if (!parsed.success) return { errors: fieldErrors(parsed.error) };
+  // PIB je opcion (i neregistrovani placevi mogu da objavljuju); sa PIB-om plac može dobiti oznaku „Provjeren plac".
   const taxId = normalizeTaxId(parsed.data.taxId);
-  if (!taxId) return { errors: { taxId: "Unesi PIB firme (8 cifara)" } };
   if (parsed.data.terms !== "on") return { errors: { terms: "Moraš prihvatiti uslove za autoplaceve" } };
 
   await db.transaction(async (tx) => {

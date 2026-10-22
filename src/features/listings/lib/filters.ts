@@ -48,6 +48,7 @@ export const PUBLISHED_OPTIONS = [
 export const FLAG_KEYS = Object.keys(FLAGS) as FlagKey[];
 /** URL ključevi za prekidače (vrijednost u URL-u je "1"). */
 const FLAG_URL: Record<FlagKey, string> = {
+  verifiedDealer: "provjeren",
   customs: "carinjen",
   undamaged: "neostecen",
   firstOwner: "prvi_vlasnik",

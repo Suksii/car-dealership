@@ -30,6 +30,8 @@ export interface ListingFilters {
   q?: string;
   /** Objavljeno u posljednjih N dana (1 ili 7). */
   publishedDays?: number;
+  /** Samo placevi kojima je admin potvrdio PIB. */
+  verifiedDealer?: boolean;
   customs?: boolean;
   undamaged?: boolean;
   firstOwner?: boolean;
@@ -65,6 +67,7 @@ function whereFor(f: ListingFilters): SQL[] {
   if (f.drive?.length) w.push(inArray(listings.drive, f.drive));
   if (f.powerMinHp) w.push(gte(listings.powerKw, Math.floor(f.powerMinHp / 1.35962)));
   if (f.publishedDays) w.push(sql`${listings.publishedAt} > now() - make_interval(days => ${f.publishedDays})`);
+  if (f.verifiedDealer) w.push(sql`${dealers.verifiedAt} IS NOT NULL`);
   if (f.customs) w.push(eq(listings.customsCleared, true));
   if (f.undamaged) w.push(eq(listings.isDamaged, false));
   if (f.firstOwner) w.push(eq(listings.firstOwner, true));

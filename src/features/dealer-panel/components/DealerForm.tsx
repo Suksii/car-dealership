@@ -49,17 +49,16 @@ export default function DealerForm({ action, cities, dealer, logo, cover, submit
         />
         <Field label="Adresa" name="address" defaultValue={dealer?.address ?? ""} error={e.address} />
         <Field
-          label="PIB firme"
+          label="PIB firme (opciono)"
           name="taxId"
           inputMode="numeric"
           maxLength={12}
           placeholder="8 cifara"
           defaultValue={dealer?.taxId ?? ""}
-          required={!dealer}
           hint={
             dealer?.verifiedAt
               ? "Firma je provjerena. Promjena PIB-a traži ponovnu provjeru."
-              : "Provjeravamo ga u registru prije odobrenja placa. Ne prikazuje se javno."
+              : "Sa PIB-om plac dobija oznaku „Provjeren plac” kad ga potvrdimo u registru. Ne prikazuje se javno."
           }
           error={e.taxId}
         />

@@ -42,6 +42,7 @@ const countSchema = z.object({
   powerMinHp: posInt,
   q: z.string().trim().max(60).optional(),
   publishedDays: z.union([z.literal(1), z.literal(7)]).optional(),
+  verifiedDealer: z.boolean().optional(),
   customs: z.boolean().optional(),
   undamaged: z.boolean().optional(),
   firstOwner: z.boolean().optional(),

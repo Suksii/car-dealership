@@ -90,3 +90,12 @@ describe("novi filteri", () => {
     expect(chips[0].query).toBe("kredit=1");
   });
 });
+
+describe("provjereni placevi", () => {
+  it("prekidač ide u URL kao provjeren=1 i ima svoj čip", () => {
+    const f = parseFilters({ provjeren: "1" });
+    expect(f.verifiedDealer).toBe(true);
+    expect(filtersToQuery(f)).toBe("provjeren=1");
+    expect(activeFilterChips(f, cat)[0].label).toBe("Samo provjereni placevi");
+  });
+});

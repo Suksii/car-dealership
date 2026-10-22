@@ -32,6 +32,7 @@ export const EMISSION = {
 } as const;
 /** Brzi filteri (prekidači) na listi: ključ u ListingFilters -> labela. */
 export const FLAGS = {
+  verifiedDealer: "Samo provjereni placevi",
   customs: "Ocarinjen",
   undamaged: "Neoštećen",
   firstOwner: "Prvi vlasnik",
