@@ -40,10 +40,12 @@ async function LatestListings() {
 }
 
 async function Dealers() {
-  const dealers = (await getDealers()).slice(0, 6);
-  if (dealers.length === 0) return null;
+  const all = await getDealers();
+  if (all.length === 0) return null;
+  // Pune redove od po 3 (bez kartice koja sama visi u zadnjem redu); ostali su iza „Svi placevi".
+  const dealers = all.slice(0, all.length >= 6 ? 6 : all.length >= 3 ? 3 : all.length);
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-3">
       {dealers.map((d) => (
         <DealerCard key={d.id} dealer={d} />
       ))}
@@ -84,7 +86,7 @@ export default function HomePage() {
         <SectionTitle title="Autoplacevi" href="/placevi" linkLabel="Svi placevi" />
         <Suspense
           fallback={
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-3">
               {Array.from({ length: 3 }, (_, i) => (
                 <Skeleton key={i} className="h-44 rounded-2xl" />
               ))}

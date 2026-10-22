@@ -6,14 +6,15 @@ import { pluralSr } from "@/lib/utils/format";
 
 const SHORT: Partial<Record<keyof typeof BODY, string>> = { suv: "SUV i džipovi" };
 
-/** Red kartica po karoseriji sa slikom pravog oglasa iz baze. Prikazuje samo karoserije koje imaju oglase. */
+/** Red kartica po karoseriji sa slikom pravog oglasa iz baze. Prikazuje samo karoserije koje imaju oglase;
+ * na desktopu kartice dijele cijelu širinu reda, koliko god ih ima (2 do 6). */
 export default async function BodyTypes() {
   const stats = (await getBodyTypeStats()).filter((s) => s.image).slice(0, 6);
   if (stats.length < 2) return null;
   return (
     <ul className="row-scroll">
       {stats.map((s) => (
-        <li key={s.body} className="w-40 shrink-0 snap-start lg:w-auto lg:max-w-64 lg:flex-1">
+        <li key={s.body} className="w-40 shrink-0 snap-start lg:w-auto lg:min-w-0 lg:flex-1">
           <Link
             href={`/automobili?karoserija=${s.body}`}
             className="group relative block aspect-[5/4] overflow-hidden rounded-2xl bg-neutral-200"
@@ -23,7 +24,7 @@ export default async function BodyTypes() {
                 src={s.image}
                 alt=""
                 fill
-                sizes="(max-width: 1024px) 160px, 200px"
+                sizes="(max-width: 1024px) 160px, 320px"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
             )}
