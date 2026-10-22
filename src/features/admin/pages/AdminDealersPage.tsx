@@ -20,10 +20,11 @@ export default async function AdminDealersPage() {
   return (
     <>
       <h1 className="text-2xl font-bold tracking-tight">Placevi</h1>
-      <dl className="mt-4 mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">
+      <dl className="mt-4 mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
         {[
           [stats.pendingDealers, "čeka odobrenje"],
           [stats.activeListings, "aktivnih oglasa"],
+          [stats.views7d, "pregleda u 7 dana"],
           [stats.contactClicks7d, "kontakata u 7 dana"],
           [stats.openReports, "otvorenih prijava"],
         ].map(([n, label]) => (
@@ -73,6 +74,9 @@ export default async function AdminDealersPage() {
                   ) : (
                     <span className="text-danger font-semibold">Bez PIB-a</span>
                   )}
+                </p>
+                <p className="mt-0.5 text-xs">
+                  <span className="font-semibold">{`30 dana: ${d.views30} ${pluralSr(d.views30, ["pregled", "pregleda", "pregleda"])} · ${d.contacts30} ${pluralSr(d.contacts30, ["kontakt", "kontakta", "kontakata"])}`}</span>
                 </p>
                 <p className="text-muted mt-0.5 truncate text-xs">
                   {`${d.city} · ${d.phone} · ${d.ownerName ?? ""} (${d.ownerEmail}) · ${d.activeListings} ${pluralSr(d.activeListings, ["oglas", "oglasa", "oglasa"])} · ${formatDate(d.createdAt)}`}

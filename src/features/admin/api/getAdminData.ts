@@ -1,6 +1,7 @@
 import { and, count, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { contactClicks, dealers, listings, reports, users } from "@/db/schema";
+import { contactClicks, dealers, listingViewsDaily, listings, reports, users } from "@/db/schema";
+import { STATS_DAYS, STATS_TZ, lastDays } from "@/features/dealer-panel/lib/stats";
 import { imageUrl } from "@/lib/images";
 
 /** Admin podaci se ne keširaju: uvijek svježe, čita se samo poslije requireAdmin(). */
@@ -11,10 +12,22 @@ export async function getAdminStats() {
   const since = new Date(Date.now() - 7 * 86400_000);
   const [clicks] = await db.select({ n: count() }).from(contactClicks).where(gte(contactClicks.createdAt, since));
   const [open] = await db.select({ n: count() }).from(reports).where(eq(reports.status, "open"));
-  return { pendingDealers: pending.n, activeListings: active.n, contactClicks7d: clicks.n, openReports: open.n };
+  const [views] = await db
+    .select({ n: sql<number>`coalesce(sum(${listingViewsDaily.views}), 0)`.mapWith(Number) })
+    .from(listingViewsDaily)
+    .where(gte(listingViewsDaily.day, lastDays(7)[0]));
+  return {
+    pendingDealers: pending.n,
+    activeListings: active.n,
+    views7d: views.n,
+    contactClicks7d: clicks.n,
+    openReports: open.n,
+  };
 }
 
+/** Svi placevi sa aktivnošću za zadnjih 30 lokalnih dana (pregledi i kontakti). */
 export async function getDealersForAdmin() {
+  const from = lastDays(STATS_DAYS)[0];
   const rows = await db
     .select({
       id: dealers.id,
@@ -29,6 +42,14 @@ export async function getDealersForAdmin() {
       createdAt: dealers.createdAt,
       logoKey: dealers.logoKey,
       city: sql<string>`(SELECT name FROM cities WHERE cities.id = ${dealers.cityId})`,
+      views30:
+        sql<number>`(SELECT coalesce(sum(v.views), 0) FROM listing_views_daily v WHERE v.dealer_id = ${dealers.id} AND v.day >= ${from}::date)`.mapWith(
+          Number,
+        ),
+      contacts30:
+        sql<number>`(SELECT count(*) FROM contact_clicks c WHERE c.dealer_id = ${dealers.id} AND c.created_at >= (${from}::date AT TIME ZONE ${STATS_TZ}))`.mapWith(
+          Number,
+        ),
       ownerEmail: users.email,
       ownerName: users.name,
     })

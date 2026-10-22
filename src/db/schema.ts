@@ -344,6 +344,23 @@ export const contactClicks = pgTable(
   ],
 );
 
+/** Pregledi po oglasu i danu (lokalni dan, Europe/Podgorica) — statistika za plac i admina. */
+export const listingViewsDaily = pgTable(
+  "listing_views_daily",
+  {
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id, { onDelete: "cascade" }),
+    dealerId: uuid("dealer_id").references(() => dealers.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    views: integer("views").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.listingId, t.day] }),
+    index("listing_views_daily_dealer_day_idx").on(t.dealerId, t.day),
+  ],
+);
+
 export const reports = pgTable(
   "reports",
   {

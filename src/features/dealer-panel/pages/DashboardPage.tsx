@@ -11,6 +11,8 @@ import Button from "@/features/shared/components/ui/Button";
 import SectionHeader from "@/features/shared/components/ui/SectionHeader";
 import { setListingStatus } from "@/features/dealer-panel/actions";
 import EmptyState from "@/features/shared/components/ui/EmptyState";
+import { getDealerStats } from "@/features/dealer-panel/api/getDealerStats";
+import DealerStatsPanel from "@/features/dealer-panel/components/DealerStatsPanel";
 
 const STATUS_VARIANT = {
   draft: "default",
@@ -20,13 +22,22 @@ const STATUS_VARIANT = {
   removed: "danger",
 } as const;
 
+function listingStatsLine(views30: number, contacts30: number, viewsTotal: number) {
+  const views = pluralSr(views30, ["pregled", "pregleda", "pregleda"]);
+  const contacts = pluralSr(contacts30, ["kontakt", "kontakta", "kontakata"]);
+  return `30 dana: ${views30} ${views} · ${contacts30} ${contacts} · ukupno ${viewsTotal}`;
+}
+
 export default async function DashboardPage() {
   const dealer = await requireDealer();
-  const rows = await db.query.listings.findMany({
-    where: eq(listings.dealerId, dealer.id),
-    orderBy: desc(listings.createdAt),
-    with: { make: true, model: true, images: { limit: 1, orderBy: (img, { asc }) => asc(img.sortOrder) } },
-  });
+  const [rows, stats] = await Promise.all([
+    db.query.listings.findMany({
+      where: eq(listings.dealerId, dealer.id),
+      orderBy: desc(listings.createdAt),
+      with: { make: true, model: true, images: { limit: 1, orderBy: (img, { asc }) => asc(img.sortOrder) } },
+    }),
+    getDealerStats(dealer.id),
+  ]);
   const visible = rows.filter((r) => r.status !== "removed");
 
   return (
@@ -48,6 +59,8 @@ export default async function DashboardPage() {
           · {visible.length} {pluralSr(visible.length, ["oglas", "oglasa", "oglasa"])}
         </span>
       </p>
+
+      {visible.length > 0 && <DealerStatsPanel stats={stats} />}
 
       {visible.length === 0 ? (
         <EmptyState
@@ -75,8 +88,14 @@ export default async function DashboardPage() {
                   <span className="text-muted font-normal">{l.year}</span>
                 </p>
                 <p className="text-muted text-sm">
-                  {l.priceOnRequest ? "Cijena na upit" : formatPrice(l.priceEur)} · {formatKm(l.mileageKm)} ·{" "}
-                  {l.viewsCount} pregleda
+                  {l.priceOnRequest ? "Cijena na upit" : formatPrice(l.priceEur)} · {formatKm(l.mileageKm)}
+                </p>
+                <p className="text-muted text-xs">
+                  {listingStatsLine(
+                    stats.byListing.views.get(l.id) ?? 0,
+                    stats.byListing.contacts.get(l.id) ?? 0,
+                    l.viewsCount,
+                  )}
                 </p>
               </div>
               <Badge variant={STATUS_VARIANT[l.status]}>{LISTING_STATUS[l.status]}</Badge>

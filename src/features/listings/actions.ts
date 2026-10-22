@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { contactClicks, listings } from "@/db/schema";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { LOCAL_DAY_SQL } from "@/features/dealer-panel/lib/stats";
 
 const CONTACT = ["phone", "viber", "whatsapp", "email"] as const;
 type ContactType = (typeof CONTACT)[number];
@@ -25,16 +26,19 @@ export async function trackContactClick(listingId: string, type: ContactType) {
   }
 }
 
-/** Brojač pregleda: jednom po IP-u i oglasu na sat. */
+/** Brojač pregleda: jednom po IP-u i oglasu na sat. Ukupan broj na oglasu + dnevni red za statistiku (jedan upit). */
 export async function trackView(listingId: string) {
   if (!uuid.safeParse(listingId).success) return;
   try {
     const ip = clientIp(await headers());
     if (!rateLimit(`view:${ip}:${listingId}`, 1, 3600_000).ok) return;
-    await db
-      .update(listings)
-      .set({ viewsCount: sql`${listings.viewsCount} + 1` })
-      .where(eq(listings.id, listingId));
+    await db.execute(sql`
+      WITH l AS (
+        UPDATE listings SET views_count = views_count + 1 WHERE id = ${listingId} RETURNING id, dealer_id
+      )
+      INSERT INTO listing_views_daily (listing_id, dealer_id, day, views)
+      SELECT id, dealer_id, ${LOCAL_DAY_SQL}, 1 FROM l
+      ON CONFLICT (listing_id, day) DO UPDATE SET views = listing_views_daily.views + 1`);
   } catch {
     // isto
   }

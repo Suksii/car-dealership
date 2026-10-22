@@ -41,6 +41,7 @@ export const FLAGS = {
   financing: "Kredit / lizing",
   warranty: "Sa garancijom",
 } as const;
+export const CONTACT_TYPE = { phone: "Pozivi", viber: "Viber", whatsapp: "WhatsApp", email: "Email" } as const;
 export const LISTING_STATUS = {
   draft: "Nacrt",
   active: "Aktivan",
@@ -64,3 +65,4 @@ export type DriveKey = keyof typeof DRIVE;
 export type OriginKey = keyof typeof ORIGIN;
 export type EmissionKey = keyof typeof EMISSION;
 export type FlagKey = keyof typeof FLAGS;
+export type ContactTypeKey = keyof typeof CONTACT_TYPE;

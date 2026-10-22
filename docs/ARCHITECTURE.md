@@ -79,6 +79,16 @@ traži tačno godište, pa ±1; prikazuje se tek od 3 uporediva oglasa
 (`PriceEstimate` na oglasu). Osvježavanje: `scripts/refresh-stats.mts`, u
 produkciji cron jednom dnevno.
 
+## Statistika placa
+
+- **Pregledi**: `trackView` (server akcija sa stranice oglasa) jednim upitom povećava
+  `listings.views_count` i red u `listing_views_daily` za današnji lokalni dan
+  (`Europe/Podgorica`). Isti IP se broji jednom po oglasu na sat.
+- **Kontakti**: `trackContactClick` upisuje svaki klik na telefon/Viber/WhatsApp u `contact_clicks`.
+- **Prikaz**: `dealer-panel/api/getDealerStats` (30 dana, bez keša) → `DealerStatsPanel` na `/plac`;
+  admin na `/admin` vidi preglede i kontakte za 30 dana po placu. Dani se računaju kroz
+  `dealer-panel/lib/stats.ts` (`lastDays`, `fillSeries`), nikad po zoni servera.
+
 ## SEO
 
 - `src/app/robots.ts` (zabranjeni `/plac`, `/nalog`, `/admin`, `/api`, auth

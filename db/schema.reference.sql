@@ -243,6 +243,16 @@ CREATE TABLE contact_clicks (
 CREATE INDEX contact_clicks_dealer_time_idx  ON contact_clicks (dealer_id, created_at);
 CREATE INDEX contact_clicks_listing_time_idx ON contact_clicks (listing_id, created_at);
 
+-- Pregledi po oglasu i lokalnom danu (Europe/Podgorica) — statistika za plac i admina
+CREATE TABLE listing_views_daily (
+  listing_id  uuid NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+  dealer_id   uuid REFERENCES dealers(id) ON DELETE CASCADE,
+  day         date NOT NULL,
+  views       integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (listing_id, day)
+);
+CREATE INDEX listing_views_daily_dealer_day_idx ON listing_views_daily (dealer_id, day);
+
 -- Prijave oglasa (prevara, prodato, pogrešna cijena)
 CREATE TABLE reports (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
