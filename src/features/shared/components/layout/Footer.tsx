@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Logo from "@/features/shared/components/ui/Logo";
+import Logo, { LogoMark } from "@/features/shared/components/ui/Logo";
 import { SITE } from "@/config/site";
 
 const YEAR = new Date().getFullYear(); // module scope, ne u renderu (prerender)
@@ -34,8 +34,10 @@ const COLS = [
 
 export default function Footer() {
   return (
-    <footer className="border-border bg-surface mt-20 border-t">
-      <div className="container-page grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+    <footer className="border-border bg-surface relative mt-20 overflow-hidden border-t">
+      {/* Veliki blijedi znak u donjem desnom uglu, isječen ivicom; samo ukras. */}
+      <LogoMark size={300} className="pointer-events-none absolute -right-16 -bottom-20 hidden opacity-5 md:block" />
+      <div className="container-page relative grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-3">
           <Logo />
           <p className="text-muted max-w-sm text-sm">{SITE.description}</p>
@@ -58,7 +60,7 @@ export default function Footer() {
           </nav>
         ))}
       </div>
-      <div className="container-page border-border text-muted flex flex-wrap items-center justify-between gap-2 border-t py-5 text-xs">
+      <div className="container-page border-border text-muted relative flex flex-wrap items-center justify-between gap-2 border-t py-5 text-xs">
         <span>
           © {YEAR} {SITE.name}. Sva prava zadržana.
         </span>

@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { ImageResponse } from "next/og";
 import { SITE } from "@/config/site";
 
@@ -6,7 +8,10 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 /** Podrazumijevana OG slika (naslovna, lista, placevi). Oglasi imaju svoju fotografiju. */
-export default function OpenGraphImage() {
+export default async function OpenGraphImage() {
+  // Bijela verzija cijelog loga na tamnoj podlozi, kao data URI (Satori ne učitava relativne putanje).
+  const png = await readFile(path.join(process.cwd(), "public/logo-light.png"));
+  const logo = `data:image/png;base64,${png.toString("base64")}`;
   return new ImageResponse(
     <div
       style={{
@@ -21,9 +26,8 @@ export default function OpenGraphImage() {
         fontFamily: "sans-serif",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <div style={{ width: 64, height: 64, borderRadius: 18, background: "#e8590c" }} />
-        <div style={{ fontSize: 56, fontWeight: 800, letterSpacing: -2 }}>{`${SITE.name.toLowerCase()}.`}</div>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <img src={logo} alt="" width={416} height={120} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
         <div style={{ fontSize: 68, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2, maxWidth: 900 }}>

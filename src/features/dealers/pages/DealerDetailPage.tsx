@@ -12,6 +12,7 @@ import Breadcrumbs from "@/features/shared/components/ui/Breadcrumbs";
 import SortSelect from "@/features/listings/components/SortSelect";
 import { cn } from "@/lib/utils/cn";
 import { pluralSr } from "@/lib/utils/format";
+import EmptyState from "@/features/shared/components/ui/EmptyState";
 
 type SP = Record<string, string | string[] | undefined>;
 
@@ -134,7 +135,7 @@ export default async function DealerDetailPage({
         <SortSelect filters={{ ...filters, dealer: undefined }} basePath={`/placevi/${slug}`} />
       </div>
       {result.items.length === 0 ? (
-        <p className="text-muted">Ovaj plac trenutno nema aktivnih oglasa.</p>
+        <EmptyState>Ovaj plac trenutno nema aktivnih oglasa.</EmptyState>
       ) : (
         <div className="grid-listings">
           {result.items.map((item) => (

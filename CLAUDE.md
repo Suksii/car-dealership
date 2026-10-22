@@ -3,8 +3,10 @@
 # Autoplac — projekt-specifično
 
 Oglasnik polovnih automobila za Crnu Goru, okrenut autoplacevima. Svoj projekat
-(nije za klijenta). Radni naziv `autoplac`; ime i domen nisu konačni, pa ime
-sajta nigdje ne pisati kao literal — samo kroz `src/config/site.ts`.
+(nije za klijenta). Ime sajta je **Autivo** (domeni `autivo.me` i `autivo.com`); folder i
+paket se i dalje zovu `autoplac` (radni naziv). Ime sajta nigdje ne pisati kao
+literal — samo kroz `src/config/site.ts`. Riječ „autoplac" u UI tekstu je
+obična imenica (plac koji prodaje auta), ne brend.
 
 - **Referentni projekti za stil i strukturu**: `/var/www/html/ksport-new`
   (primarno), `/var/www/html/tehnoplus-new`, `/var/www/html/lubenicashop-new`.

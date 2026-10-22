@@ -10,6 +10,7 @@ import Skeleton from "@/features/shared/components/ui/Skeleton";
 import Hero from "@/features/home/components/Hero";
 import BodyTypes from "@/features/home/components/BodyTypes";
 import DealerCta from "@/features/home/components/DealerCta";
+import EmptyState from "@/features/shared/components/ui/EmptyState";
 
 function SectionTitle({ title, href, linkLabel }: { title: string; href: string; linkLabel: string }) {
   return (
@@ -28,7 +29,7 @@ function SectionTitle({ title, href, linkLabel }: { title: string; href: string;
 
 async function LatestListings() {
   const items = await getLatestListings(8);
-  if (items.length === 0) return <p className="text-muted">Još nema oglasa.</p>;
+  if (items.length === 0) return <EmptyState>Još nema oglasa.</EmptyState>;
   return (
     <div className="grid-listings">
       {items.map((item) => (

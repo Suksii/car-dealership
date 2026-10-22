@@ -2,6 +2,7 @@ import { getDealers } from "@/features/dealers/api/getDealers";
 import DealerCard from "@/features/dealers/components/DealerCard";
 import Breadcrumbs from "@/features/shared/components/ui/Breadcrumbs";
 import { pluralSr } from "@/lib/utils/format";
+import EmptyState from "@/features/shared/components/ui/EmptyState";
 
 export default async function DealersPage() {
   const dealers = await getDealers();
@@ -17,7 +18,7 @@ export default async function DealersPage() {
         ponudu
       </p>
       {dealers.length === 0 ? (
-        <p className="text-muted">Još nema registrovanih placeva.</p>
+        <EmptyState>Još nema registrovanih placeva.</EmptyState>
       ) : (
         <div className="flex flex-col gap-10">
           {[...byCity.entries()].map(([city, list]) => (

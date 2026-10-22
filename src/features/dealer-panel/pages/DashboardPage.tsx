@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { listings } from "@/db/schema";
@@ -11,6 +10,7 @@ import Badge from "@/features/shared/components/ui/Badge";
 import Button from "@/features/shared/components/ui/Button";
 import SectionHeader from "@/features/shared/components/ui/SectionHeader";
 import { setListingStatus } from "@/features/dealer-panel/actions";
+import EmptyState from "@/features/shared/components/ui/EmptyState";
 
 const STATUS_VARIANT = {
   draft: "default",
@@ -50,13 +50,15 @@ export default async function DashboardPage() {
       </p>
 
       {visible.length === 0 ? (
-        <div className="border-border bg-surface text-muted rounded-2xl border border-dashed p-12 text-center text-sm">
-          Još nemaš oglasa.{" "}
-          <Link href="/plac/oglasi/novi" className="text-accent font-medium hover:underline">
-            Dodaj prvo vozilo
-          </Link>
-          .
-        </div>
+        <EmptyState
+          action={
+            <Button href="/plac/oglasi/novi" variant="outline">
+              Dodaj prvo vozilo
+            </Button>
+          }
+        >
+          Još nemaš oglasa.
+        </EmptyState>
       ) : (
         <ul className="flex flex-col gap-2">
           {visible.map((l) => (

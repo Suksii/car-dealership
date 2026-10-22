@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/dal";
 import { toCardItem } from "@/features/listings/lib/card";
 import ListingCard from "@/features/listings/components/ListingCard";
 import Button from "@/features/shared/components/ui/Button";
+import EmptyState from "@/features/shared/components/ui/EmptyState";
 
 type Row = Parameters<typeof toCardItem>[0] & { status: string; dealer: { status: string } | null };
 
@@ -36,12 +37,15 @@ export default async function FavoritesPage() {
 
   if (items.length === 0) {
     return (
-      <div className="border-border bg-surface rounded-2xl border border-dashed p-12 text-center">
-        <p className="text-muted">Još nemaš sačuvanih oglasa. Klikni na srce na oglasu koji ti se sviđa.</p>
-        <Button href="/automobili" variant="outline" className="mt-5">
-          Pogledaj automobile
-        </Button>
-      </div>
+      <EmptyState
+        action={
+          <Button href="/automobili" variant="outline">
+            Pogledaj automobile
+          </Button>
+        }
+      >
+        Još nemaš sačuvanih oglasa. Klikni na srce na oglasu koji ti se sviđa.
+      </EmptyState>
     );
   }
   return (

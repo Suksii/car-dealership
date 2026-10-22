@@ -93,8 +93,23 @@ Nova dijeljena komponenta: prvo provjeri `ksport-new/features/shared/components/
 
 ## Logo
 
-`src/features/shared/components/ui/Logo.tsx` (inline SVG, boje iz tokena),
-`public/logo.svg` (za email/OG), `src/app/icon.svg` (favicon). Znak: tamna
-pločica, bijela silueta auta, plava traka puta. Wordmark: naziv malim slovima
-sa plavom tačkom. Kad ime postane konačno, mijenja se samo `SITE.name` i
-wordmark u `public/logo.svg`.
+Logo je „A sa putem" + ime AUTIVO: slovo A bez prečke, lijeva noga asfaltni put u
+perspektivi sa isprekidanom linijom, desna noga narandžasta; ime uspravnim bold
+verzalom u jednoj boji. Napravio ga je ChatGPT po našem promptu (razgovor
+„Kreiranje logoa Autoplac"), original je `Downloads/autoplac-logo-png/autivo-original.png`
+(1536×1024, providna pozadina). Skripta (scratchpad `mklogo2.py`) ga prebojava u
+tokene (`foreground` + `accent`), dijeli znak od teksta i pravi:
+`public/logo.png` / `logo-light.png` (cijeli, za svijetlu / tamnu podlogu),
+`public/logo-mark.png` / `logo-mark-light.png` (samo znak), `src/app/icon.png`
+(favicon: tamna pločica + bijeli znak) i `src/app/apple-icon.png`. OG slika
+(`src/app/opengraph-image.tsx`) čita `logo-light.png` kao data URI.
+Komponente u `Logo.tsx`: `Logo` (cijeli logo, header i footer, visina 34px) i
+`LogoMark` (samo znak, mobilni meni); obje primaju `size` i `light`. Ime sajta
+nose `aria-label` i `SITE.name`. Riječ u logu je ucrtana: promjena imena znači
+novi logo.
+
+## Navigacija
+
+Header 64px: logo, na desktopu segmentirana pilula sa linkovima (aktivna stavka
+bijela sa `shadow-xs`), desno srce sa brojem sačuvanih (`FavoritesLink`) pa
+korisnički meni ili hamburger. Mobilni meni je desni drawer sa ikonama uz linkove.

@@ -10,6 +10,7 @@ import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { usePresence } from "@/lib/hooks/usePresence";
 import { cn } from "@/lib/utils/cn";
 import ActiveNavLinks from "@/features/shared/components/layout/ActiveNavLinks";
+import { LogoMark } from "@/features/shared/components/ui/Logo";
 
 /** Hamburger + panel sa linkovima; `children` je UserMenu koji ulazi kao prop. */
 export default function MobileMenu({ children }: { children: ReactNode }) {
@@ -30,7 +31,7 @@ export default function MobileMenu({ children }: { children: ReactNode }) {
         aria-expanded={open}
         aria-controls="mobile-menu"
         onClick={() => setOpen(true)}
-        className="-m-2 p-2 md:hidden"
+        className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 md:hidden"
       >
         <Menu size={22} aria-hidden="true" />
       </button>
@@ -57,7 +58,10 @@ export default function MobileMenu({ children }: { children: ReactNode }) {
               )}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold">Meni</span>
+                <span className="inline-flex items-center gap-2 font-bold">
+                  <LogoMark size={26} />
+                  <span>Meni</span>
+                </span>
                 <button type="button" aria-label="Zatvori" onClick={close} className="-m-2 p-2">
                   <X size={20} aria-hidden="true" />
                 </button>

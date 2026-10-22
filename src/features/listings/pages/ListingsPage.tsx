@@ -9,6 +9,7 @@ import SortSelect from "@/features/listings/components/SortSelect";
 import Pagination from "@/features/shared/components/ui/Pagination";
 import Breadcrumbs from "@/features/shared/components/ui/Breadcrumbs";
 import { pluralSr } from "@/lib/utils/format";
+import EmptyState from "@/features/shared/components/ui/EmptyState";
 
 type SP = Record<string, string | string[] | undefined>;
 
@@ -63,9 +64,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
           <ListingsPendingDim>
             <ActiveFilterChips chips={chips} className="mb-4 flex flex-wrap gap-2" />
             {result.items.length === 0 ? (
-              <div className="border-border bg-surface text-muted rounded-2xl border border-dashed p-12 text-center">
-                Nema oglasa za izabrane filtere. Probaj da ukloniš neki filter.
-              </div>
+              <EmptyState>Nema oglasa za izabrane filtere. Probaj da ukloniš neki filter.</EmptyState>
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
                 {result.items.map((item, i) => (
